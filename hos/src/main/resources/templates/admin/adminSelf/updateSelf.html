@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<link rel="stylesheet" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}">
+	<script type="text/javascript" src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script type="text/javascript" src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">个人信息维护</li>
+		</ol>
+		
+		<h2 class="page-header">个人信息维护</h2>
+		<span id="adminId" hidden></span><!-- 用于记录当前登录的管理员id -->
+		<form class="form-horizontal" style="height: 760px">
+			<div class="form-group">
+				<label for="adminName" class="col-sm-2 control-label"><span style="color:red;">* </span></label>
+				<div class="col-sm-3">
+					<input class="form-control col-lg-4" id="adminName" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="adminAccount" class="col-sm-2 control-label">账号</label>
+				<div class="col-sm-3">
+					<input class="form-control col-lg-4" id="adminAccount" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="adminSex" class="col-sm-2 control-label">性别</label>
+				<div class="col-sm-3">
+					<select class="form-control" id="adminSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="adminAge" class="col-sm-2 control-label"><span style="color:red;">* </span>年龄</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="adminAge" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="adminEmail" class="col-sm-2 control-label"><span style="color:red;">* </span>邮箱</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="adminEmail" onblur="checkEmailForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="adminPhone" class="col-sm-2 control-label" ><span style="color:red;">* </span>联系电话</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="adminPhone" onblur="checkPhoneForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="submit" class="btn btn-primary" id="updateAdmin">提交修改</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script>
+		$("document").ready(function () {
+			$.ajax({
+				async: false,
+				dataType: "json",
+				type: "get",
+				url: "/hos/admin/selectCurrentAdmin",
+				success: function (data) {
+					showResult(data);
+                }
+			});
+        });
+
+		function showResult(data) {
+		    $("#adminId").text(data.adminId);
+			$("#adminName").val(data.adminName);
+            $("#adminAccount").val(data.adminAccount);
+            $("#adminSex").val(data.adminSex);
+            $("#adminAge").val(data.adminAge);
+            $("#adminEmail").val(data.adminEmail);
+            $("#adminPhone").val(data.adminPhone);
+        }
+
+		// 点击提交，对个人信息进行修改
+		$("#updateAdmin").click(function () {
+		    if (checkForm()==false){
+		        alert("请正确填写相关信息");
+		        return false;
+			}
+            event.preventDefault();
+			$.ajax({
+				async: false,
+				type: "post",
+				dataType: "text",
+				data: {
+                    "adminId": $("#adminId").text(),
+					"adminName": $("#adminName").val(),
+					"adminSex": $("#adminSex").val(),
+                    "adminAge": $("#adminAge").val(),
+                    "adminEmail": $("#adminEmail").val(),
+                    "adminPhone": $("#adminPhone").val(),
+				},
+				url: "/hos/admin/updateAdminById",
+				success: function (data) {
+					if (data=="update admin success"){
+					    alert("修改成功");
+					    location.reload();
+					} else {
+					    alert("发生未知错误，修改失败，请稍后再试");
+					}
+                }
+			});
+        });
+		
+		function checkForm() {
+			if(isNullForm("#adminAge")==false){
+			    return false;
+			}
+			if (checkEmailForm("#adminEmail")==false){
+			    return false;
+			}
+            if(checkPhoneForm("#adminPhone")==false){
+                return false;
+            }
+            return true;
+        }
+       
+	</script>
+</html>

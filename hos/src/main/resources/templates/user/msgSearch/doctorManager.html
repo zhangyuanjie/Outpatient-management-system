@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">医生信息查询</li>
+		</ol>
+
+		<h2 class="page-header">查询医生信息</h2>
+		<div class="row">
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="doctorName">医生姓名</label>
+				<input type="text" class="form-control" id="doctorName" placeholder="请输入医生姓名">
+			</div>
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="doctorSex">医生性别</label>
+				<select class="form-control" id="doctorSex">
+					<option>男</option>
+					<option>女</option>
+				</select>
+			</div>
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="doctorStatus">医生状态</label>
+				<select class="form-control" id="doctorStatus">
+					<option>坐诊</option>
+					<option>停诊</option>
+				</select>
+			</div>
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="doctorType">医生类型</label>
+				<input type="text" class="form-control" id="doctorType" placeholder="请输入医生类型">
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group form-inlin col-lg-2 col-md-3 col-sm-3 col-xs-6">
+				<button type="button" class="btn btn-default" id="searchDoctor">查询</button>
+			</div>
+		</div>
+
+
+		<h3 class="page-header">查询结果</h3>
+		<p class='text-center alert alert-warning' id="nullData" style="display: none">暂无匹配结果</p> <!-- 用于当查询无结果时的提示信息 -->
+		<table class="table table-striped table-bordered table-hover">
+			<thead>
+				<tr>
+					<th>姓名</th>
+					<th>性别</th>
+					<th>医生类型</th>
+					<th>上班时间</th>
+					<th>医生状态</th>
+					<th>出诊费用</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody id="result">
+
+			</tbody>
+		</table>
+
+		<div class="thePage">
+			<nav aria-label="Page navigation" class="text-center" id="pageNav">
+				<ul class="pagination" id="pageDetails">
+
+				</ul>
+			</nav>
+			<p class="text-center alert alert-info">当前 <span id="pageNum"></span> 页，总 <span id="pages"></span> 页，共 <span id="total"></span> 条记录</p>
+		</div>
+
+		<!-- 模态框 -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">医生详情</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="name" class="col-sm-3 control-label">医生名字：</label>
+								<div class="col-sm-9">
+									<span id="name" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="age" class="col-sm-3 control-label">医生年龄：</label>
+								<div class="col-sm-9">
+									<span id="age" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="sex" class="col-sm-3 control-label">医生性别：</label>
+								<div class="col-sm-9">
+									<span id="sex" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="type" class="col-sm-3 control-label">医生类别：</label>
+								<div class="col-sm-9">
+									<span id="type" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="status" class="col-sm-3 control-label">医生状态：</label>
+								<div class="col-sm-9">
+									<span id="status" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="depName" class="col-sm-3 control-label">所属科室：</label>
+								<div class="col-sm-9">
+									<span id="depName" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="workTime" class="col-sm-3 control-label">上班时间：</label>
+								<div class="col-sm-9">
+									<span id="workTime" class="form-control"></span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="attendancePrice" class="col-sm-3 control-label">出诊费用：</label>
+								<div class="col-sm-9 ">
+									<span id="attendancePrice" class="form-control"></span>
+									<!--<div class="input-group-addon">$</div>-->
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="doctorDetails" class="col-sm-3 control-label">医生详情：</label>
+								<div class="col-sm-9">
+									<textarea rows="3" class="form-control" readonly id="doctorDetails"></textarea>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">确认</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">
+        $("document").ready(function () {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectAllDoctor",
+                success: function (data) {
+                    showResult(data);
+                    showPage(data);
+                    dealPage(data);
+                }
+            });
+        });
+
+        $("#searchDoctor").click(function () {
+            $.ajax({
+                async: false,
+                type: "post",
+                dataType: "json",
+                data: {
+                    "doctorName":$("#doctorName").val(),
+                    "doctorSex":$("#doctorSex").val(),
+                    "doctorStatus":$("#doctorStatus").val(),
+                    "doctorType":$("#doctorType").val()
+                },
+                url: "/hos/selectDoctorByKey",
+                success: function (data) {
+                    showResult(data);
+                    showPage(data);
+                    dealPage(data);
+                }
+            });
+        });
+
+        function showResult(data) {
+            var result = null;
+            // 如果查询结果不存在
+            if(data.list.length==0){
+                $("#nullData").show();
+                $("table").hide();
+            }else {
+                $("#nullData").hide();
+                $("table").show();
+                // 获取分页之后的数据
+                for (var i = 0; i < data.list.length; i++) {
+                    result += '<tr>' +
+                        '<td>' + data.list[i].doctorName + '</td> ' +
+                        '<td>' + data.list[i].doctorSex + '</td>' +
+                        '<td>' + data.list[i].doctorType + '</td>' +
+                        '<td>' + data.list[i].workTime + '</td>' +
+                        '<td>' + data.list[i].doctorStatus + '</td>' +
+                        '<td>' + data.list[i].attendancePrice + '</td>' +
+                        '<td>' +
+                        '<button class="btn btn-primary" onclick="showDoctor('+ data.list[i].doctorId +')" data-target="#myModal" data-toggle="modal" id="details">查看详情</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+                $("#pageNum").text(data.pageNum);
+                $("#pages").text(data.pages);
+                $("#total").text(data.total);
+                $("#result").html(result);
+            }
+        }
+
+
+        function showDoctor(doctorId) {
+            $.ajax({
+                async: false,
+                type: "post",
+                dataType: "json",
+                data: {"doctorId":doctorId},
+                url: "/hos/selectDoctorDepById",
+                success: function (data) {
+                    $("#name").html(data.doctorName);
+                    $("#age").html(data.doctorAge);
+                    $("#sex").html(data.doctorSex);
+                    $("#type").html(data.doctorType);
+                    $("#status").html(data.doctorStatus);
+                    $("#depName").html(data.department.departmentName);
+                    $("#workTime").html(data.workTime);
+                    $("#attendancePrice").html("￥ " + data.attendancePrice);
+                    $("#doctorDetails").html(data.doctorDetails);
+                }
+            });
+        }
+
+        // 点击翻页时触发的函数
+        function nextPage(page){
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDoctorByKey",
+                data: {
+                    "pageNum": page,
+                    "doctorName":$("#doctorName").val(),
+                    "doctorSex":$("#doctorSex").val(),
+                    "doctorStatus":$("#doctorStatus").val(),
+                    "doctorType":$("#doctorType").val()
+				},
+                success: function(data){
+                    showResult(data); // 展示分页的数据
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                }
+            });
+        }
+	</script>
+</html>

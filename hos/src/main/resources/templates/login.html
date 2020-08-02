@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>登录</title>
+	</head>
+	<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/signin.css}"/>
+	<script type="text/javascript" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script type="text/javascript" th:src="@{~/hos/static/js/login.js}"></script>
+	<body>
+		<div class="container">
+			<div id="mainPane" class="row">
+				<h1 style="color: #fff;padding: 0px 15px;font-size: 60px;" id="title">校医院门诊系统</h1>
+				<div class="col-md-8 hidden-sm hidden-xs" id="contentPane">
+
+				</div>
+
+				<div class="col-md-4" id="loginPane">
+					<ul class="nav nav-tabs nav-justified">
+						<li class="active"><a href="#userLogin">普通用户登录</a></li>
+						<li><a href="#admin">管理员登录</a></li>
+					</ul>
+					<div class="tab-content">
+						<div id="userLogin" class="tab-pane active">
+							<form class="form-signin" th:action="@{~/hos/user/login}" id="loginForm" method="post">
+								<h2 class="form-signin-heading text-center">门诊系统</h2>
+								<label for="userAccount" class="sr-only">账号</label>
+								<input type="text" id="userAccount" name="userAccount" class="form-control" placeholder="请输入账号" required autofocus />
+
+								<label for="userPwd" class="sr-only">密码</label>
+								<input type="password" id="userPwd" name="userPwd" class="form-control" placeholder="请输入密码" required />
+                                <div class="row" style="margin: 10px 0px">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="普通用户"> 普通用户
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="医生"> 医生
+                                    </label>
+                                </div>
+								<button class="btn btn-lg btn-primary btn-block" type="submit" id="userBtn">登录</button>
+								<button type="button" class="btn btn-link navbar-left" onclick="toRegister()">注册</button>
+								<button type="button" class="btn btn-link navbar-right" onclick="toForgetPwd()">忘记密码?</button>
+							</form>
+						</div>
+						<div id="admin" class="tab-pane">
+							<form class="form-signin" th:action="@{~/hos/admin/login}" method="post">
+								<h2 class="form-signin-heading text-center">管理员登录</h2>
+								<label for="adminAccount" class="sr-only">AdminName</label>
+								<input type="text" id="adminAccount" name="adminAccount" class="form-control" placeholder="请输入账号" required autofocus>
+								<label for="adminPwd" class="sr-only">Password</label>
+								<input type="password" id="adminPwd" name="adminPwd" class="form-control" placeholder="请输入密码" required>
+								<button class="btn btn-lg btn-primary btn-block" type="submit" id="adminBtn">登录</button>
+								<button type="button" class="btn btn-link navbar-right" onclick="toForgetPwd()">忘记密码?</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div> <!-- /container -->
+	</body>
+
+	<script type="text/javascript">
+		function toRegister() {
+			window.location.href = "/hos/register";
+        }
+
+        function toForgetPwd(){
+            window.location.href = "/hos/forgetPwd";
+        }
+
+        $(window).ready(function () {
+            var msg = "[[${msg}]]";
+            if(msg=="账号或密码错误"){
+                // $("#error").show();
+                alert("账号或密码错误");
+            }
+        })
+	</script>
+</html>

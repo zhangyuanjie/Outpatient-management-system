@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>书写病历</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+	<link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}" >
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="myPatient.html" th:href="@{myPatient}">我的病人</a></li>
+			<li class="active">书写病历</li>
+		</ol>
+
+		<h2 class="page-header">书写病历</h2>
+        <!-- 记录当前登录患者的挂号编号 -->
+        <span class="hidden" id="registrationId" th:text="${registrationId}"></span>
+        <!-- 用于展示相关提示信息 -->
+        <div class="alert alert-success alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <p id="msg"></p>
+        </div>
+		<form class="form-horizontal">
+			<h3 class="page-header">基本信息</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6">
+                    <span id="isRecExist" hidden></span><!-- 用作判断是否有历史病历的存在 -->
+					<label for="recordId" class="control-label">病历编号</label>
+					<input type="text" class="form-control" id="recordId" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="medicalCard" class="control-label">就诊卡号</label>
+					<input type="text" class="form-control" id="medicalCard" readonly>
+				</div>
+			</div>
+			<h3 class="page-header">病人信息</h3>
+             <!--用于记录当前病人编号-->
+            <span id="patientId" hidden></span>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientName" class="control-label">患者姓名</label>
+					<input type="text" class="form-control" id="patientName" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientSex" class="control-label">性别</label>
+                    <input type="text" class="form-control" id="patientSex" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientAge" class="control-label">患者年龄</label>
+					<input type="text" class="form-control" id="patientAge" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientPhone" class="control-label">患者联系电话</label>
+					<input type="text" class="form-control" id="patientPhone" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientAddress" class="control-label">患者联系地址</label>
+					<input type="text" class="form-control" id="patientAddress" readonly>
+				</div>
+			</div>
+			<h3 class="page-header">诊断结果<button type="button" class="btn btn-info navbar-right" style="margin-right: 0px;" data-toggle="modal" data-target="#myModal" id="addDis">新增诊断结果</button></h3>
+			<ul class="list-group" id="diagnostic">
+				<!-- 显示诊断结果 -->
+			</ul>
+
+			<div class="row" style="text-align: center;padding: 50px">
+				<button type="button" class="btn btn-primary" onclick="submitMed()">确认提交</button>
+				<button type="button" class="btn btn-info" onclick="toWritePrescription()">开处方</button>
+			</div>
+		</form>
+
+		<!-- 新增诊断结果模态框 -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">新增诊断信息<small>（请正确填写相关信息，一经提交无法修改）</small></h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal">
+							<div class="form-group">
+                                 <!--用于记录当前登录医生所在科室-->
+                                <span id="departmentId" th:text="${session.currentDoctor.departmentId}" hidden></span>
+								<label for="department" class="col-sm-3 control-label">就诊科室：</label>
+								<div class="col-sm-9">
+									<input id="department" class="form-control" readonly>
+								</div>
+							</div>
+							<div class="form-group">
+                                <!--用于记录当前登录医生编号-->
+                                <span id="doctorId" th:text="${session.currentDoctor.doctorId}" hidden></span>
+								<label for="doctor" class="col-sm-3 control-label">就诊医生：</label>
+								<div class="col-sm-9">
+									<input id="doctor" class="form-control" th:value="${session.currentDoctor.doctorName}" readonly>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="time" class="col-sm-3 control-label">诊断时间：</label>
+								<div class="col-sm-9">
+									<input id="time" class="form-control" onblur="isNullForm(this)">
+									<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="result" class="col-sm-3 control-label">诊断结果：</label>
+								<div class="col-sm-9">
+									<textarea id="result" class="form-control" rows="5" onblur="isNullForm(this)"></textarea>
+									<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+								</div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="sumbitDia">提交</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+	</body>
+	<script type="text/javascript">
+        $("#time").datetimepicker({
+            language: "zh-CN",
+            format: "yyyy-mm-dd hh:ii:ss",
+            autoclose: true,
+            todayBtn: true
+        });
+
+		$("document").ready(function() {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {
+                    "registrationId": $("#registrationId").text()
+                },
+                url: "/hos/selectRegMore",
+                success: function (data) {
+                    $("#patientId").text(data.patient.patientId);
+                    $("#medicalCard").val(data.medicalCard);
+                    $("#patientName").val(data.patientName);
+                    $("#patientSex").val(data.patient.patientSex);
+                    $("#patientAge").val(data.patient.patientAge);
+                    $("#patientPhone").val(data.patient.patientPhone);
+                    $("#patientAddress").val(data.patient.patientAddress);
+                    $("#department").val(data.department.departmentName);
+                }
+            });
+
+            var currentDate = getCurrentDate();
+            var depId = $("#departmentId").text();
+            var patientId = $("#patientId").text();
+            var recordId = ((depId < 10) ? "0" : "") + depId + ""  + currentDate + "" + patientId; // 自动生成病历编号：科室编号+当前日期+医生编号
+            $("#recordId").val(recordId);
+
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                data: {
+                    "medicalCard": $("#medicalCard").val()
+                },
+                url: "/hos/selectRecByCard",
+                success: function(data){
+					if(data=="Record is not exist"){ // 病人为初诊，暂无病历，新建病历号
+					    console.log("不存在");
+					    $("#msg").html("该病人未有历史病历，自动生成新病历，相关信息自动填入");
+					    $("#isRecExist").text("false");// 添加数据库中“未有”历史病历标识
+					}else if(data=="error"){
+					    alert("出现未知错误，请稍后再试");
+					    window.location.href="/hos/doctor/myPatient";
+					}else {
+                        $("#msg").html("该病人有历史病历，已导入其对应病历相关信息");
+                        $("#recordId").val(data);
+                        $("#isRecExist").text("true");// 添加数据库中“已有”历史病历标识
+                        //    通过ajax，根据 recordId 查询对应的就诊情况
+                        $.ajax({
+                            async: false,
+                            type: "get",
+                            dataType: "json",
+                            data: {
+                                "recordId": $("#recordId").val()
+                            },
+                            url: "/hos/selectDiaByRecId",
+                            success: function (data) {
+                                showDia(data);
+                            }
+                        });
+					}
+                }
+            });
+        });
+
+		function showDia(data){
+            var result = "";
+            for (var i=0; i<data.length;i++){
+                result += '<li class="list-group-item">' +
+                                '<div class="row">' +
+                                    '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                                        '<label class="control-label">诊断科室</label>' +
+                                        '<input type="text" class="form-control" value=" '+ data[i].department.departmentName +'" readonly>' +
+                                    '</div>' +
+                                    '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                                        '<label class="control-label">诊断医生</label>' +
+                                        '<input type="text" class="form-control" value="' + data[i].doctor.doctorName + '" readonly>' +
+                                    '</div>' +
+                                    '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                                        '<label class="control-label">诊断时间</label>' +
+                                        '<input type="text" class="form-control" value="' + data[i].diagnosticTime + '" readonly>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="row">' +
+                                    '<div class="col-lg-6 col-md-8 col-sm-12">' +
+                                        '<label for="anamnesis" class="control-label">诊断结果</label>' +
+                                        '<textarea rows="6" class="form-control" id="anamnesis" readonly>'+ data[i].diagnosticResult + '</textarea>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</li>';
+            }
+            $("#diagnostic").html(result);
+        }
+
+        $("#addDis").click(function () {  // 新增诊断信息的前提是病历信息已经提交，即在数据库中存在
+            var flag = $("#isRecExist").text();
+            if(flag=="false"){
+                alert("尚未有历史病历记录，需先提交病历相关信息，才能进行诊断信息录入");
+                return false;
+            }else {
+                return true;
+            }
+        });
+
+		$("#sumbitDia").click(function () {
+		    if(isNullForm("#time")==false){
+		        return false;
+			}else if(isNullForm("#result")==false){
+		        return false;
+			}
+            $.ajax({
+                async: false,
+                type: "post",
+                dataType: "text",
+                data: {
+                    "departmentId": $("#departmentId").text(),
+                    "doctorId": $("#doctorId").text(),
+                    "diagnosticTime": $("#time").val(),
+                    "diagnosticResult": $("#result").val(),
+                    "recordId": $("#recordId").val()
+                },
+                url: "/hos/insertDiaByRecId",
+                success: function (data) {
+                    if(data=="insert dia success"){
+                        alert("诊断信息添加成功");
+                        location.reload();
+                    }else {
+                        alert("添加失败，请稍后再试");
+                    }
+                }
+            });
+        });
+
+        function submitMed() {
+            // 将对应挂号状态改为“已就诊”
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                data: {
+                    "registrationId": $("#registrationId").text()
+                },
+                url: "/hos/updateStatusById",
+                success: function (data) {
+                    console.log('挂号状态已变为"已就诊"');
+                }
+            });
+            $.ajax({
+                async: false,
+                type: "post",
+                dataType: "text",
+                data: {
+                    "recordId": $("#recordId").val(),
+                    "medicalCard": $("#medicalCard").val(),
+                },
+                url: "/hos/insertRec",
+                success: function (data) {
+                    if(data=="insert rec success"){
+                        alert("病历相关信息提交成功");
+                        location.reload();
+                    }else if(data=="rec is exist"){
+                        alert("病历已经存在，无需重复提交");
+                        $("#msg").html("病历已经存在，无需重复提交");
+                    }
+                    else {
+                        alert("添加失败，请稍后再试");
+                    }
+                }
+            });
+        }
+
+        function toWritePrescription(){
+            var flag = $("#isRecExist").text();
+            var recordId = $("#recordId").val();
+            var registrationId = $("#registrationId").text();
+            if(flag=="false"){
+                alert("尚未有历史病历记录，需先提交病历相关信息，才能为病人开处方");
+                return false;
+            }else {
+                window.location.href="/hos/doctor/toWritePrescription?recordId=" + recordId + "&registrationId=" + registrationId;
+            }
+		}
+
+	</script>
+</html>

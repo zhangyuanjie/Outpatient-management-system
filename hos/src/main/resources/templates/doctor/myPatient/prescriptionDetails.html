@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+	<link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}">
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="myPrescription.html" th:href="@{myPrescription}">处方记录</a></li>
+			<li class="active">处方详情</li>
+		</ol>
+
+		<h2 class="page-header">处方详情</h2>
+		 <!--记录当前处方编号-->
+		<span class="hidden" id="preId" th:text="${prescriptionId}"></span>
+		<form class="form-horizontal">
+			<h3 class="page-header">病人信息</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="prescriptionId" class="control-label">处方编号</label>
+					<input type="text" class="form-control" id="prescriptionId">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientName" class="control-label">患者姓名</label>
+					<input type="text" class="form-control" id="patientName">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientSex" class="control-label">性别</label>
+					<select class="form-control" id="patientSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientAge" class="control-label">患者年龄</label>
+					<input type="text" class="form-control" id="patientAge">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientPhone" class="control-label">患者联系电话</label>
+					<input type="text" class="form-control" id="patientPhone">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="recordId" class="control-label">病历编号</label>
+					<input type="text" class="form-control" id="recordId" th:value="${recordId}">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="medicalCard" class="control-label">就诊卡号</label>
+					<input type="text" class="form-control" id="medicalCard">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="prescriptionTime" class="control-label">开具日期</label>
+					<input type="text" class="form-control" id="prescriptionTime">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6 col-md-8 col-sm-12">
+					<label for="anamnesis" class="control-label">临床诊断</label>
+					<textarea rows="2" class="form-control" id="anamnesis"></textarea>
+				</div>
+			</div>
+
+			<h3 class="page-header">开药清单</h3>
+			<p class='text-center alert alert-warning' id="nullData" style="display: none">暂无药品</p> <!-- 用于当查询无结果时的提示信息 -->
+			<table class="table table-striped table-bordered table-hover" id="drugLists">
+				<thead>
+					<tr>
+						<th>编号</th>
+						<th>药品名称</th>
+						<th>规格</th>
+						<th>用法</th>
+						<th>数量</th>
+						<th>单位</th>
+						<th>单价/元</th>
+						<th>总价/元</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<!-- 此处数据展示，SQL语句使用到了多表查询 -->
+				<tbody id="drugList">
+
+				</tbody>
+			</table>
+
+            <h3 class="page-header">其它信息</h3>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <span id="doctorId" hidden></span>
+                    <label for="doctorName" class="control-label">医师</label>
+                    <input type="text" class="form-control" id="doctorName" >
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="totalPrice" class="control-label">药品金额</label>
+                    <input type="text" class="form-control" id="totalPrice" >
+                </div>
+            </div>
+		</form>
+
+        <!-- 药品详细信息模态框 -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">药品详细信息</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="dId" class="col-sm-3 control-label">药品编号：</label>
+                                <div class="col-sm-9">
+                                    <span id="dId" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dName" class="col-sm-3 control-label">药品名称：</label>
+                                <div class="col-sm-9">
+                                    <span id="dName" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dType" class="col-sm-3 control-label">药品类型：</label>
+                                <div class="col-sm-9">
+                                    <span id="dType" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dSpecification" class="col-sm-3 control-label">药品规格：</label>
+                                <div class="col-sm-9">
+                                    <span id="dSpecification" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dWay" class="col-sm-3 control-label">药品用法：</label>
+                                <div class="col-sm-9">
+                                    <span id="dWay" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dFunction" class="col-sm-3 control-label">药品功能：</label>
+                                <div class="col-sm-9">
+                                    <textarea id="dFunction" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dPrice" class="col-sm-3 control-label">药品价格：</label>
+                                <div class="col-sm-9">
+                                    <span id="dPrice" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dTime" class="col-sm-3 control-label">有效期：</label>
+                                <div class="col-sm-9">
+                                    <span id="dTime" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="dProvider" class="col-sm-3 control-label">供应商：</label>
+                                <div class="col-sm-9">
+                                    <span id="dProvider" class="form-control"></span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</body>
+
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectPrePatByPreId",
+                data: {
+                    "prescriptionId": $("#preId").text()
+                },
+                success: function(data) {
+                    $("#prescriptionId").val(data.prescriptionId);
+                    $("#patientName").val(data.patient.patientName);
+                    $("#patientSex").val(data.patient.patientSex);
+                    $("#patientAge").val(data.patient.patientAge);
+                    $("#patientPhone").val(data.patient.patientPhone);
+                    $("#recordId").val(data.recordId);
+                    $("#medicalCard").val(data.patient.medicalCard);
+                    $("#prescriptionTime").val(data.prescriptionTime);
+                    $("#diagnostic").val(data.diagnostic);
+                    $("#doctorId").val(data.doctorId);
+                }
+			});
+
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugByPreId",
+                data: {
+                    "prescriptionId": $("#preId").text()
+                },
+                success: function(data) {
+                    showDrugList(data);
+                }
+            });
+
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDoctorById",
+                data: {
+                    "doctorId": $("#doctorId").val()
+                },
+                success: function(data) {
+                    $("#doctorName").val(data.doctorName);
+                }
+            });
+        })
+
+		// 显示药品列表
+		function showDrugList(data) {
+		    var result = "";
+		    var allTotal = parseFloat("0");
+			if(data.length==0){
+			    $("#drugLists").hide();
+			    $("#nullData").show();
+			}else {
+                $("#drugLists").show();
+                $("#nullData").hide();
+                for (var i=0; i<data.length; i++){
+                    var total = parseFloat("0");
+                    total += parseFloat((data[i].drug.drugPrice * data[i].drugNum).toFixed(2));
+                    result += '<tr>' +
+                        '<td name="drugId">' + data[i].drugId + '</td> ' +
+                        '<td name="drugName">' + data[i].drug.drugName + '</td> ' +
+                        '<td name="drugSpecification">' + data[i].drug.drugSpecification + '</td>' +
+                        '<td name="drugWay">' + data[i].drug.drugWay + '</td>' +
+                        '<td name="num">' + data[i].drugNum + '</td>' +
+                        '<td name="drugUnit">' + data[i].drug.drugUnit + '</td>' +
+                        '<td name="drugPrice">' + data[i].drug.drugPrice + '</td>' +
+                        '<td name="total">' + total + '</td>' +
+                        '<td>' +
+                        '<button type="button" class="btn btn-info" data-target="#myModal" data-toggle="modal" onclick="showDrug(\''+ data[i].drugId + '\')">查看</button>' +
+                        '</td>' +
+                        '</tr>';
+                    allTotal += total;
+				}
+				$("#drugList").html(result);
+                $("#totalPrice").val(allTotal.toFixed(2));
+			}
+        }
+        function showDrug(drugId) {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugById",
+                data: {
+                    "drugId": drugId
+                },
+                success: function(data) {
+                    $("#dId").text(data.drugId);
+                    $("#dName").text(data.drugName);
+                    $("#dType").text(data.drugType);
+                    $("#dSpecification").text(data.drugSpecification);
+                    $("#dWay").text(data.drugWay);
+                    $("#dFunction").val(data.drugFunction);
+                    $("#dPrice").text(data.drugPrice);
+                    $("#dTime").text(data.drugTime);
+                    $("#dProvider").text(data.drugProvider);
+                }
+            })
+        }
+	</script>
+</html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.DiagnosticMapper">
+
+    <resultMap id="dia_dep_doc_map" type="diagnostic">
+        <id property="diagnosticId" column="diagnostic_id"/>
+        <result property="departmentId" column="department_id"/>
+        <result property="doctorId" column="doctor_id"/>
+        <result property="diagnosticTime" column="diagnostic_time"/>
+        <result property="diagnosticResult" column="diagnostic_result"/>
+        <association property="department" column="department_id" javaType="department">
+            <id  property="departmentId" column="department_id"></id>
+            <result property="departmentName" column="department_name"/>
+        </association>
+        <association property="doctor" column="doctor_id" javaType="doctor">
+            <id  property="doctorId" column="doctor_id"></id>
+            <result property="doctorName" column="doctor_name"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertDiaByRecId" parameterType="diagnostic">
+        insert into t_diagnostic(department_id, doctor_id, diagnostic_time, diagnostic_result, record_id)
+        value(#{departmentId}, #{doctorId}, #{diagnosticTime}, #{diagnosticResult}, #{recordId})
+    </insert>
+
+    <select id="selectDiaByRecId" resultMap="dia_dep_doc_map" parameterType="String">
+        select d.*, d2.department_id, d2.department_name, d3.doctor_id, d3.doctor_name from t_diagnostic d inner join t_department d2 on d.department_id = d2.department_id inner join t_doctor d3 on d.doctor_id = d3.doctor_id
+         where record_id = #{recordId} order by diagnostic_time desc
+    </select>
+
+    <select id="selectDiaByDocId" resultType="diagnostic" parameterType="Integer">
+        select * from t_diagnostic
+        where doctor_id = #{doctorId} order by diagnostic_time desc
+    </select>
+
+    <select id="selectResByDiaId" resultType="String" parameterType="Integer">
+        select diagnostic_result from t_diagnostic
+        where diagnostic_id = #{diagnosticId}
+    </select>
+
+    <select id="selectDiaByKey" parameterType="com.zyj.hos.vo.DiagnosticVo" resultType="diagnostic">
+        select * from t_diagnostic
+        <where>
+            <if test="diagnosticId!='' and diagnosticId!=null">
+                and diagnostic_id like concat('%',#{diagnosticId}, '%')
+            </if>
+            <if test="recordId!='' and recordId!=null">
+                and record_id like concat('%',#{recordId}, '%')
+            </if>
+            <if test="startTime!=null">
+                and diagnostic_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and diagnostic_time &lt; #{endTime}
+            </if>
+        </where>
+        order by diagnostic_time desc
+    </select>
+</mapper>

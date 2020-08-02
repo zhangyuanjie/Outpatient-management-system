@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>挂号详情</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+		table button{
+			margin: 0 5px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">挂号详情</li>
+		</ol>
+
+		<h2 class="page-header">挂号信息详情</h2>
+		<div class="panel panel-success">
+			<div class="panel-heading">挂号详情</div>
+			<p class='text-center alert alert-info' id="nullData" style="display: none">暂无任何挂号申请</p> <!-- 用于当查询无结果时的提示信息 -->
+			<table class="table table-striped table-bordered table-hover" id="now">
+				<thead>
+					<tr>
+						<th>就诊卡号</th>
+						<th>患者姓名</th>
+						<th>科室编号</th>
+						<th>预约日期</th>
+						<th>当前状态</th>
+						<th colspan="2">操作</th>
+						<!-- 1.查看详情，2.取消预约 -->
+					</tr>
+				</thead>
+				<tbody id="nowReg">
+
+				</tbody>
+			</table>
+		</div>
+
+		<!-- 确认是否删除，模态框 -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">确认框</h4>
+					</div>
+					<div class="modal-body">
+						<label class="control-label">确定要取消该挂号？</label>
+						<span id="regId" class="hidden"></span>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-warning" data-dismiss="modal" id="check">确认</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<h3 class="page-header">历史挂号信息</h3>
+		<div class="panel panel-warning">
+			<div class="panel-heading">历史挂号详情</div>
+			<p class='text-center alert alert-info' id="nullData2" style="display: none">暂无任何历史挂号记录</p> <!-- 用于当查询无结果时的提示信息 -->
+			<table class="table table-striped table-bordered table-hover" id="old">
+				<thead>
+					<tr>
+						<th>就诊卡号</th>
+						<th>患者姓名</th>
+						<th>科室编号</th>
+						<th>预约日期</th>
+						<th>当前状态</th>
+						<th colspan="2">操作</th>
+						<!-- 1.查看详情 -->
+					</tr>
+				</thead>
+				<tbody id="oldReg">
+
+				</tbody>
+			</table>
+			</div>
+
+	</body>
+	<script type="text/javascript">
+		$("document").ready(function () {
+            $.ajax({
+				async: false,
+				type: "get",
+				dataType: "json",
+				url: "/hos/selectNowReg",
+				success: function (data) {
+                    showNowRegistration(data);
+                }
+			});
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectOldReg",
+                success: function (data) {
+                    showOldRegistration(data);
+                }
+            });
+        });
+
+		function showNowRegistration(data) {
+		    var result = "";
+		    var status = "";
+            if(data.length==0){
+			    $("#now").hide();
+			    $("#nullData").show()
+			}else{
+                $("#nullData").hide();
+                $("#now").show();
+                for(var i=0;i<data.length;i++) {
+                    if(data[i].registrationStatus==0){
+                        status = "预约中";
+                    }else if(data[i].registrationStatus==1){
+                        status = "成功预约";
+                    }
+                    result += '<tr>' +
+                        '<td>' + data[i].medicalCard + '</td> ' +
+                        '<td>' + data[i].patientName + '</td> '+
+                        '<td>' + data[i].departmentId + '</td>'+
+                        '<td>' + data[i].appointmentTime + '</td>'+
+                        '<td>' + status + '</td>'+
+                        '<td>' +
+                        '<button type="button" class="btn btn-primary" onclick="toRegMore(\'' + data[i].registrationId + '\')">查看详情</button>' +
+                        '<button type="button" class="btn btn-warning" data-target="#myModal" data-toggle="modal" onclick="removeReg(\'' + data[i].registrationId + '\')">取消预约</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+			}
+			$("#nowReg").html(result);
+        }
+        function showOldRegistration(data) {
+            var result = "";
+            var status = "";
+            if(data.length==0){
+                $("#old").hide();
+                $("#nullData2").show()
+            }else{
+                $("#nullData2").hide();
+                $("#old").show();
+                for(var i=0;i<data.length;i++) {
+                    if(data[i].registrationStatus==2){
+                        status = "已就诊";
+					}else if(data[i].registrationStatus==-1){
+                        status = "已取消/失效";
+					}
+                    result += '<tr>' +
+                        '<td>' + data[i].medicalCard + '</td> ' +
+                        '<td>' + data[i].patientName + '</td> ' +
+                        '<td>' + data[i].departmentId + '</td>' +
+                        '<td>' + data[i].appointmentTime + '</td>' +
+                        '<td>' + status + '</td>' +
+                        '<td>' +
+                        '<button type="button" class="btn btn-primary" id="next" onclick="toRegMore(\'' + data[i].registrationId + '\')">查看详情</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+            }
+            $("#oldReg").html(result);
+        }
+
+        function removeReg(registrationId) {
+			$("#regId").text(registrationId);
+        }
+
+        $("#check").click(function () {
+			$.ajax({
+				async: false,
+				dataType: "text",
+				type: "post",
+				url: "/hos/deleteRegById",
+				data: {"registrationId": $("#regId").text()},
+				success: function (data) {
+					if(data=="delete success"){
+                        $.ajax({
+                            async: false,
+                            dataType: "text",
+                            type: "post",
+                            url: "/hos/removeRegBill",
+							data: {"registrationId":$("#regId").text()},
+                            success: function (data) {
+                                if(data=="remove reg success"){
+                                    alert("取消成功，相应退款单已自动生成，可在我的账单查看详情！");
+                                    location.reload();
+                                }else{
+                                    alert("取消失败，请稍后再试！");
+                                }
+                            }
+                        });
+                    }else{
+					    alert("取消失败，请稍后再试！");
+					}
+                }
+			})
+        });
+
+        function toRegMore(registrationId) {
+			window.location.href="/hos/toRegMore?registrationId=" + registrationId;
+        }
+	</script>
+</html>

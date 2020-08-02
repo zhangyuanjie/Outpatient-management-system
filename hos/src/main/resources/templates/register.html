@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>注册账号</title>
+		<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+		<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/cover.css}"/>
+		<script type="text/javascript" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+		<script type="text/javascript" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+		<script type="text/javascript" th:src="@{~/hos/static/js/check.js}"></script>
+	</head>
+	<body>
+		<div class="site-wrapper">
+			<div class="site-wrapper-inner">
+				<div class="cover-container">
+					<div class="masthead clearfix">
+						<div class="inner">
+							<h3 class="masthead-brand">校医院门诊系统</h3>
+							<nav>
+								<ul class="nav masthead-nav">
+									<li><a href="cover">首页</a></li>
+									<li><a href="login">登录</a></li>
+									<li class="active"><a href="#">注册</a></li>
+								</ul>
+							</nav>
+						</div>
+					</div>
+
+
+					<div class="row">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="userAccount" class="col-sm-4 control-label">账号</label>
+								<div class="col-sm-5">
+									<input type="text" class="form-control" id="userAccount" placeholder="账号" onblur="isAccount(this)">
+									<small style="color: #A94442;"><!-- 用于显示错误信息 --></small>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="userName" class="col-sm-4 control-label">姓名</label>
+								<div class="col-sm-5">
+									<input type="text" class="form-control" id="userName" placeholder="姓名" onblur="isNullForm(this)">
+									<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="userEmail" class="col-sm-4 control-label">邮箱</label>
+								<div class="col-sm-5">
+									<input type="text" class="form-control" id="userEmail" placeholder="邮箱" onblur="checkEmailForm(this)">
+									<small style="color: #A94442;" hidden>
+										<!-- 用于显示错误信息 --></small>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="vCode" class="col-sm-4 control-label">验证码</label>
+								<div class="col-sm-5">
+									<div class="input-group">
+										<input type="text" class="form-control" id="vCode" aria-describedby="basic-addon1" placeholder="验证码">
+										<div class="input-group-btn">
+											<button type="button" class="btn btn-info" id="getVCode">获取验证码</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="userPwd" class="col-sm-4 control-label">密码</label>
+								<div class="col-sm-5">
+									<input type="password" class="form-control" id="userPwd" placeholder="密码" onblur="isAccount(this)">
+									<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="col-sm-offset-4 navbar-left" style="padding-left: 15px;">
+									<button type="button" class="btn btn-primary" id="regist">注册</button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+					<div class="mastfoot">
+						<div class="inner">
+							<p>design for <a href="login">school hospital</a>, by <a href="###">jike 1603</a>.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		$("#regist").click(function () {
+			if (checkForm()==false){
+			    console.log("error");
+			    return false;
+			}else if(isVCodeNull("#vCode")==false){
+			    alert("请输入验证码");
+			    return false;
+            }
+			else {
+                $.ajax({
+                    async: false,
+                    dataType: "text",
+                    type: "get",
+                    url: "/hos/insertUser",
+					data: {
+                        "userAccount": $("#userAccount").val(),
+						"userName": $("#userName").val(),
+						"userEmail": $("#userEmail").val(),
+						"userPwd": $("#userPwd").val(),
+                        "vCode": $("#vCode").val()
+					},
+                    success: function (data) {
+						if (data=="insert user success"){
+						    alert("注册成功，自动跳转到登录页面");
+						    window.location.href = "/hos/login";
+						}else if (data=="account is exist") {
+						    alert("该账号已存在，请重新输入");
+                        }else if (data=="vCode is error") {
+                            alert("验证码错误");
+                        }else {
+						    alert("发生错误，请稍后再试");
+						}
+                    }
+                });
+			}
+        });
+		
+		function checkForm() {
+			if(isAccount("#userAccount")==false){
+			    return false;
+			}if (isNullForm("#userName")==false){
+			    return false;
+			} if(isAccount("#userPwd")==false){
+                return false;
+            }if(checkEmailForm("#userEmail")==false){
+                return false;
+            }
+            return true;
+        }
+
+
+        var waitTime = 60;
+        $("#getVCode").click(function(){
+            // var vCode = $(this);
+            if(checkEmailForm("#userEmail")==false){
+                return false;
+            }else {
+                $.ajax({
+                    asycn: false,
+                    dataType: "text",
+                    url: "/hos/sendVCode",
+                    data: {"to": $("#userEmail").val()},
+                    success: function (data) {
+                        if (data=="send mail success"){
+                            console.log("发送验证码成功");
+                        }else {
+                            alert("发生未知错误，请稍后再试");
+                            return false;
+                        }
+                    }
+                });
+                time(this);
+            }
+        });
+
+        // 验证码计时函数
+        function time(ele) {
+            if (waitTime == 0) {
+                ele.disabled=false;
+                ele.innerHTML = "获取验证码";
+                waitTime = 60;// 恢复计时
+            } else {
+                ele.disabled=true;
+                ele.innerHTML = waitTime + "秒后再试";
+                waitTime--;
+                setTimeout(function() {
+                    time(ele)// 关键处-定时循环调用
+                }, 1000)
+            }
+        }
+	</script>
+
+
+</html>

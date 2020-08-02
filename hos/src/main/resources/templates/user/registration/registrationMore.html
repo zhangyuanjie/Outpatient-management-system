@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>挂号信息更多详情</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+	<link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}" >
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="registration/registrationDetails.html" th:href="@{user/registrationDetails}">挂号详情</a></li>
+			<li class="active">更多信息</li>
+		</ol>
+
+		<h2 class="page-header">更多信息</h2>
+		<span id="regId" th:text="${registrationId}" class="hidden"></span>
+		<h3 class="page-header">挂号信息</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="registrationId">挂号编号</label>
+				<input class="form-control" id="registrationId" readonly/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="departmentName">挂号科室</label>
+				<input class="form-control" id="departmentName" readonly/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="doctorName">挂号医生</label>
+				<input class="form-control" id="doctorName" readonly/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="appointmentTime">预约时间</label>
+				<input class="form-control" id="appointmentTime"/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="registrationType" class="control-label">挂号类别</label>
+				<select class="form-control" id="registrationType" onblur="setPrice()">
+					<option>普通门诊</option>
+					<option>专家门诊</option>
+					<option>夜间门诊</option>
+				</select>
+			</div>
+		</div>
+		
+		<h3 class="page-header">病人信息</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="medicalCard">就诊卡号</label>
+				<input class="form-control" id="medicalCard" readonly/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientName"class="control-label"><span style="color:red;">* </span>病人姓名 <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+				<input class="form-control" id="patientName" onblur="isNull(this)"/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientSex" class="control-label"><span style="color:red;">* </span>病人性别</label>
+				<select class="form-control" id="patientSex">
+					<option>男</option>
+					<option>女</option>
+				</select>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientAge"><span style="color:red;">* </span>病人年龄  <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+				<input class="form-control" id="patientAge" onblur="isNull(this)"/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientType" class="control-label"><span style="color:red;">* </span>患者类型</label>
+				<select class="form-control" id="patientType">
+					<option>初诊</option>
+					<option>复诊</option>
+				</select>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientPhone"><span style="color:red;">* </span>病人联系电话  <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+				<input class="form-control" id="patientPhone" onblur="checkPhone(this)"/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientAddress"><span style="color:red;">* </span>病人联系地址  <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+				<input class="form-control" id="patientAddress" onblur="isNull(this)"/>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-6 col-md-8 col-sm-12">
+				<label for="anamnesis" class="control-label">既往病史</label>
+				<textarea rows="4" class="form-control" id="anamnesis"></textarea>
+			</div>
+		</div>
+		
+		<h3 class="page-header">相关费用</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="registrationPrice">门诊费用</label>
+				<input class="form-control" id="registrationPrice" readonly/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="attendancePrice">出诊费用</label>
+				<input class="form-control" id="attendancePrice" readonly>
+			</div>
+		</div>
+		
+		<h3 class="page-header">预约人相关信息</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="userName">预约人姓名</label>
+				<input class="form-control" id="userName" readonly/>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="registrationTime">挂号时间</label>
+				<input class="form-control" id="registrationTime" readonly/>
+			</div>
+		</div>
+		<div class="row" style="text-align: center; margin: 20px 0px">
+			<button type="button" class="btn btn-warning" id="updateReg">点击修改</button>
+		</div>
+	</body>
+	<script type="text/javascript">
+        var date = new Date();
+        var date2 = date.getTime() + 24*60*60*1000;
+        $("#appointmentTime").datetimepicker({
+            language: "zh-CN",
+            format: "yyyy-mm-dd hh:ii:ss",
+            autoclose: true,
+            todayBtn: true,
+            startDate: date
+        });
+
+        $("document").ready(function () {
+			var regId = $("#regId").text();
+			$.ajax({
+				async: false,
+				dataType: "json",
+				type: "post",
+                data: {"registrationId": regId},
+				url: "/hos/selectRegMore",
+				success: function (data) {
+					showRegMore(data);
+					checkIsOld(data);// 判断是否是已就诊或取消的挂号信息，若是，则无法进行修改相关信息
+                }
+			})
+        });
+
+		// 用于展示挂号详细信息
+		function showRegMore(data) {
+			$("#registrationId").val(data.registrationId);
+            $("#departmentName").val(data.department.departmentName);
+            $("#doctorName").val(data.doctor.doctorName);
+            $("#registrationType").val(data.registrationType);
+            $("#appointmentTime").val(data.appointmentTime);
+            $("#medicalCard").val(data.medicalCard);
+            $("#patientName").val(data.patientName);
+            $("#patientSex").val(data.patient.patientSex);
+            $("#patientAge").val(data.patient.patientAge);
+            $("#patientType").val(data.patient.patientType);
+            $("#patientPhone").val(data.patient.patientPhone);
+            $("#patientAddress").val(data.patient.patientAddress);
+            $("#anamnesis").val(data.patient.anamnesis);
+            $("#registrationPrice").val(data.registrationPrice);
+            $("#attendancePrice").val(data.doctor.attendancePrice);
+            $("#userName").val(data.user.userName);
+            $("#registrationTime").val(data.registrationTime);
+        }
+
+        // 检验该挂号信息是否已经就诊或取消，若是，则不可进行相关信息修改
+		function checkIsOld(data) {
+			if(data.registrationStatus!=0){
+			    $(".row div input").attr("readOnly","true");
+			    $("select").attr("disabled","disabled");
+			    $("textarea").attr("readOnly","true");
+			    $("#updateReg").hide();
+			}
+        }
+
+        // 校验函数
+        function checkForm() {
+            if(isNull("#patientName")==false){
+                return false;
+            }
+            if(isNull("#patientAge")==false){
+                return false;
+            }
+            if(checkPhone("#patientPhone")==false){
+                return false;
+            }
+            if(isNull("#patientAddress")==false){
+                return false;
+            }
+        }
+
+        // 修改挂号相关信息
+		$("#updateReg").click(function () {
+		    if(checkForm()==false){
+		        alert("请正确填写相关信息");
+		        return false;
+			}
+		    var result = "";
+			$.ajax({
+				async: false,
+				dataType: "text",
+				type: "post",
+				url: "/hos/updateRegById",
+				data: {
+				    "registrationId": $("#registrationId").val(),
+					"patientName" : $("#patientName").val(),
+					"registrationType" : $("#registrationType").val()
+				},
+				success: function (data) {
+					if(data=="update reg success"){
+					    result += "修改挂号相关信息成功;";
+					}else if(data=="update reg false"){
+					    result += "修改失败，请稍后再试;";
+					}
+                }
+			});
+            $.ajax({
+                async: false,
+                dataType: "text",
+                type: "post",
+                url: "/hos/updatePatById",
+                data: {
+                    "medicalCard": $("#medicalCard").val(),
+                    "patientName" : $("#patientName").val(),
+                    "patientSex" : $("#patientSex").val(),
+                    "patientAge" : $("#patientAge").val(),
+                    "patientType" : $("#patientType").val(),
+                    "patientPhone" : $("#patientPhone").val(),
+                    "patientAddress" : $("#patientAddress").val(),
+                    "anamnesis": $("#anamnesis").val()
+                },
+                success: function (data) {
+                    if(data=="update patient success"){
+                        result += "修改病人相关信息成功;";
+                    }else if(data=="update patient false"){
+                        result += "修改病人失败，请稍后再试;";
+                    }
+                }
+            });
+            alert(result);
+            location.reload();
+        })
+
+        function setPrice() {
+            var type = $("#registrationType").val();
+            if(type=="普通门诊"){
+                $("#registrationPrice").val("5");
+            }else if (type == "专家门诊"){
+                $("#registrationPrice").val("10");
+            } else {
+                $("#registrationPrice").val("15");
+            }
+        }
+
+	</script>
+</html>

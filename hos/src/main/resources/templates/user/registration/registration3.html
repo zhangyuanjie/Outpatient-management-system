@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>录入相关信息</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+	<link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}" >
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+        .page-header {
+            margin-top: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #31BCD1;
+        }
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="registration1.html" th:href="@{registration1}">选择挂号科室</a></li>
+			<li><a href="registration2.html" id="doctorUrl">选择挂号医生</a></li>
+			<li class="active">录入相关信息</li>
+		</ol>
+
+		<h2 class="page-header">录入相关信息</h2>
+		<!-- 记录当前医生的编号 -->
+		<span class="hidden" th:text="${doctorId}" id="doctorId"></span>
+		<!-- 记录当前医生所属科室编号 -->
+		<span class="hidden" th:text="${departmentId}" id="departmentId"></span>
+		<!-- 记录当前登录用户编号 -->
+		<span class="hidden" id="userId" th:text="${session.currentUser.userId}"></span>
+		<div class="alert alert-success alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<p id="msg">就诊卡号已自动生成，若为复诊，则输入相关就诊卡号，相关信息会自动为你填好</p>
+		</div>
+		<form class="form-horizontal">
+			<h3 class="page-header">挂号信息</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="registrationId" class="control-label">挂号编号</label>
+					<input type="text" class="form-control" id="registrationId" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="departmentName" class="control-label">挂号科室</label>
+					<input type="text" class="form-control" id="departmentName" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="doctorName" class="control-label">挂号医生</label>
+					<input type="text" class="form-control" id="doctorName" readonly>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="registrationType" class="control-label"><span style="color:red;">* </span>挂号类别</label>
+					<select class="form-control" id="registrationType" onblur="setPrice()">
+						<option>普通门诊</option>
+						<option>专家门诊</option>
+						<option>夜间门诊</option>
+					</select>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="appointmentTime"><span style="color:red;">* </span>预约时间 <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+					<input class="form-control" id="appointmentTime" onblur="isNull(this)">
+				</div>
+			</div>
+			<h3 class="page-header">病人信息</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6 ">
+					<label for="medicalCard" class="control-label"><span style="color:red;">* </span>就诊卡号 <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+					<input type="text" class="form-control" id="medicalCard" placeholder="请输入就诊卡号" onblur="selectPatByCard()" >
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientName" class="control-label"><span style="color:red;">* </span>患者姓名 <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+					<input type="text" class="form-control" id="patientName" placeholder="请输入患者姓名" onblur="isNull(this)">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientSex" class="control-label"><span style="color:red;">* </span>性别</label>
+					<select class="form-control" id="patientSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientAge" class="control-label"><span style="color:red;">* </span>患者年龄</label>
+					<input type="text" class="form-control" id="patientAge" placeholder="请输入患者年龄" onblur="isNull(this)">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientPhone" class="control-label"><span style="color:red;">* </span>患者联系电话 <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+					<input type="text" class="form-control" id="patientPhone" placeholder="请输入患者联系电话" onblur="checkPhone(this)">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientAddress" class="control-label"><span style="color:red;">* </span>患者联系地址 <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small></label>
+					<input type="text" class="form-control" id="patientAddress" placeholder="请输入患者联系地址" onblur="isNull(this)">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6 col-md-8 col-sm-12">
+					<label for="anamnesis" class="control-label">既往病史</label>
+					<textarea rows="4" class="form-control" id="anamnesis"></textarea>
+				</div>
+			</div>
+			<h3 class="page-header">相关费用</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6 ">
+					<label for="registrationPrice">门诊费用</label>
+					<input class="form-control" id="registrationPrice" readonly>
+				</div>
+                <div class="col-lg-3 col-md-4 col-sm-6 ">
+                    <label for="attendancePrice">出诊费用</label>
+                    <input class="form-control" id="attendancePrice" readonly>
+                </div>
+			</div>
+
+			<div class="row" style="text-align: center;padding: 50px">
+				<button type="button" class="btn btn-primary" onclick="checkForm()">确认挂号并缴费</button>
+			</div>
+		</form>
+
+		<!-- 模态框 -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">挂号缴费</h4>
+					</div>
+					<div class="modal-body">
+						<form class="form-horizontal">
+							<div class="form-group">
+								<label for="rPrice" class="col-sm-3 control-label">挂号费用：</label>
+								<div class="col-sm-9">
+									<span id="rPrice" class="form-control"></span>
+								</div>
+							</div>
+                            <div class="form-group">
+                                <label for="aPrice" class="col-sm-3 control-label">出诊费用：</label>
+                                <div class="col-sm-9">
+                                    <span id="aPrice" class="form-control"></span>
+                                </div>
+                            </div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal" id="checkPay">确认</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+				</div>
+			</div>
+		</div>
+
+	</body>
+	<script type="text/javascript">
+        var date = new Date();
+        var date2 = date.getTime() + 24*60*60*1000;
+        $("#appointmentTime").datetimepicker({
+            language: "zh-CN",
+            format: "yyyy-mm-dd hh:ii:ss",
+			autoclose: true,
+            todayBtn: true,
+			startDate: date
+        });
+
+        $("document").ready(function () {
+			var currentTime = getCurrentTime();
+			var medicalCard = currentTime + "" + $("#userId").text();
+            $("#medicalCard").val(medicalCard);  // 自动生成就诊卡号
+
+			var depId = $("#departmentId").text();
+			var currentDate = getCurrentDate();
+            var registrationId = ((depId < 10) ? "0" : "") + depId + ""  + currentDate + "" + $("#userId").text();
+            $("#registrationId").val(registrationId);  // 自动生成挂号编号
+
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {"doctorId":$("#doctorId").text()},
+                url: "/hos/selectDoctorDepById",
+                success: function (data) {
+                    $("#doctorName").val(data.doctorName);
+                    $("#departmentName").val(data.department.departmentName);
+                    $("#attendancePrice").val(data.attendancePrice);
+                    $("#aPrice").text(data.attendancePrice);
+                    $("#doctorUrl").attr("href","toRegistration2WithId?departmentId="+data.department.departmentId);
+                }
+            });
+
+            // 检测该挂号编号是否已经存在，存在则退出
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {"registrationId": $("#registrationId").val()},
+                url: "/hos/selectRegByRegId",
+                success: function (data) {
+                    if (data != null) {
+                        alert('你今天已经申请过一次预约，不可重复预约，请明天再试，详情可在“挂号详情”查看');
+                        window.location.href = "toRegistration2WithId?departmentId=" + $("#departmentId").text();
+                    }
+                }
+            });
+
+            setPrice();// 根据挂号类别设置挂号费用，默认为普通门诊
+        });
+
+        function selectPatByCard(){
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {"medicalCard":$("#medicalCard").val()},
+                url: "/hos/selectCard",
+                success: function (data) {
+                    if(data!=null){
+						$("#patientName").val(data.patientName);
+						$("#patientSex").val(data.patientSex);
+						$("#patientAge").val(data.patientAge);
+						$("#patientPhone").val(data.patientPhone);
+						$("#patientAddress").val(data.patientAddress);
+                        $("#msg").text("已根据就诊卡号，自动填写好相关信息");
+					}else{
+                        $("#msg").text("该就诊卡号不存在，已恢复为自动生成的就诊卡号");
+						var t = getCurrentTime();
+                        var medicalCard = t + "" + $("#userId").text();
+						$("#medicalCard").val(medicalCard);
+					}
+                },
+                error: function () {
+                    $("#msg").text("该就诊卡号不存在，已恢复为自动生成的就诊卡号");
+                    var t = getCurrentTime();
+                    var medicalCard = t + "" + $("#userId").text();
+                    $("#medicalCard").val(medicalCard);
+                }
+            });
+		}
+
+        function setPrice() {
+			var type = $("#registrationType").val();
+			if(type=="普通门诊"){
+			    $("#registrationPrice").val("5");
+                $("#rPrice").text("5");
+            }else if (type == "专家门诊"){
+                $("#registrationPrice").val("10");
+                $("#rPrice").text("10");
+            } else {
+                $("#registrationPrice").val("15");
+                $("#rPrice").text("15");
+            }
+        }
+
+        function checkForm() {
+			if(isNull("#medicalCard")==false){
+			    return false;
+			}
+            if(isNull("#appointmentTime")==false){
+                return false;
+            }
+            if(isNull("#patientName")==false){
+                return false;
+            }
+            if(isNull("#patientAge")==false){
+                return false;
+            }
+            if(checkPhone("#patientPhone")==false){
+                return false;
+            }
+            if(isNull("#patientAddress")==false){
+                return false;
+            }
+            if(isNull("#departmentName")==false){
+                return false;
+            }
+            if(isNull("#doctorName")==false){
+                return false;
+            }else {
+                $("#myModal").modal("show");
+            }
+        }
+
+        $("#checkPay").click(function () {
+            var billId = getCurrentTime() + [[${session.currentUser.userId}]]; // 账单编号：当前时间 + 用户id
+            var billDetails = "挂号费用：" + $("#rPrice").text() + "￥；出诊费用：" + $("#aPrice").text() + "￥；";
+            var rPrice = parseFloat($("#rPrice").text());
+            var aPrice = parseFloat($("#aPrice").text());
+            var bPrice = rPrice + aPrice;
+
+            var result = "";
+            // 检测该挂号编号是否已经存在，存在则退出
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                data: {"registrationId": $("#registrationId").val()},
+                url: "/hos/selectRegByRegId",
+                success: function (data) {
+                    if (data == "rec is exist") {
+                        alert('你今天已经申请过一次预约该医生，不可重复预约，请明天再试，详情可在“挂号详情”查看');
+                        window.location.href = "toRegistration2WithId?departmentId=" + $("#departmentId").text();
+                    } else if (data == "rec is not exist") {
+                        // 若可以挂号，则进行缴费
+                        console.log("进行缴费");
+                        $.ajax({
+                            async: false,
+                            type: "get",
+                            dataType: "text",
+                            data: {
+                                "billId": billId,
+                                "userId": [[${session.currentUser.userId}]],
+                                "billType": "0", // 0 代表当前账单为“挂号账单”
+                                "joinId": $("#registrationId").val(),
+                                "billDetails": billDetails,
+                                "billPrice": bPrice
+                            },
+                            url: "/hos/insertBill",
+                            success: function (data) {
+                                if(data=="insert bill success"){
+                                    alert("缴费成功");
+                                    // 缴费成功后，进行相关病人信息，挂号信息的插入
+                                    $.ajax({
+                                        async: false,
+                                        type: "post",
+                                        dataType: "text",
+                                        data: {
+                                            "medicalCard": $("#medicalCard").val(),
+                                            "patientName": $("#patientName").val(),
+                                            "patientSex": $("#patientSex").val(),
+                                            "patientAge": $("#patientAge").val(),
+                                            "patientPhone": $("#patientPhone").val(),
+                                            "patientAddress": $("#patientAddress").val(),
+                                            "anamnesis": $("#anamnesis").val()
+                                        },
+                                        url: "/hos/insertPatient",
+                                        success: function (data) {
+                                            if(data=="success"){
+                                                result += "病人信息提交成功，";
+                                            }else if(data=="error"){
+                                                result += "病人信息提交失败，"
+                                            }else {
+                                                result += "病人信息已经存在，"
+                                            }
+                                        }
+                                    });
+                                    $.ajax({
+                                        async: false,
+                                        datatype: "text",
+                                        type: "post",
+                                        data: {
+                                            "registrationId": $("#registrationId").val(),
+                                            "medicalCard": $("#medicalCard").val(),
+                                            "patientName": $("#patientName").val(),
+                                            "departmentId": $("#departmentId").text(),
+                                            "doctorId": $("#doctorId").text(),
+                                            "registrationType": $("#registrationType").val(),
+                                            "userId": $("#userId").text(),
+                                            "registrationPrice": $("#registrationPrice").val(),
+											"appointmentTime":$("#appointmentTime").val()
+                                        },
+                                        url: "/hos/insertRegistration",
+                                        success: function (data) {
+                                            if(data=="success"){
+                                                result += "挂号信息提交成功，可前往挂号详情进行查看。";
+                                            }else {
+                                                result += "病人信息提交失败，请重新录入相关信息。";
+                                            }
+                                        }
+                                    });
+                                    $("#msg").text(result);
+                                }else {
+                                    alert("发生未知错误，请稍后再试");
+                                    return false;
+                                }
+                            }
+                        })
+                    }
+                }
+            })
+
+
+
+        })
+
+        function insertRegistration() {
+            var result = "";
+            // 检测该挂号编号是否已经存在，存在则退出
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {"registrationId": $("#registrationId").val()},
+                url: "/hos/selectRegByRegId",
+                success: function (data) {
+                    if (data == "rec is exist") {
+                        alert('你今天已经申请过一次预约该医生，不可重复预约，请明天再试，详情可在“挂号详情”查看');
+                        window.location.href = "toRegistration2WithId?departmentId=" + $("#departmentId").text();
+                    }else {
+
+                    }
+                },
+                error: function () {// 第一次创建挂号订单
+                    $.ajax({
+                        async: false,
+                        type: "post",
+                        dataType: "text",
+                        data: {
+                            "medicalCard": $("#medicalCard").val(),
+                            "patientName": $("#patientName").val(),
+                            "patientSex": $("#patientSex").val(),
+                            "patientAge": $("#patientAge").val(),
+                            "patientPhone": $("#patientPhone").val(),
+                            "patientAddress": $("#patientAddress").val(),
+                            "anamnesis": $("#anamnesis").val()
+                        },
+                        url: "/hos/insertPatient",
+                        success: function (data) {
+                            if(data=="success"){
+                                result += "病人信息提交成功，";
+                            }else if(data=="error"){
+                                result += "病人信息提交失败，"
+                            }else {
+                                result += "病人信息已经存在，"
+                            }
+                        }
+                    });
+                    $.ajax({
+                        async: false,
+                        datatype: "text",
+                        type: "post",
+                        data: {
+                            "registrationId": $("#registrationId").val(),
+                            "medicalCard": $("#medicalCard").val(),
+                            "patientName": $("#patientName").val(),
+                            "departmentId": $("#departmentId").text(),
+                            "doctorId": $("#doctorId").text(),
+                            "registrationType": $("#registrationType").val(),
+                            "userId": $("#userId").text(),
+                            "registrationPrice": $("#registrationPrice").val()
+                        },
+                        url: "/hos/insertRegistration",
+                        success: function (data) {
+                            if(data=="success"){
+                                result += "挂号信息提交成功，可前往挂号详情进行查看。";
+                            }else {
+                                result += "病人信息提交失败，请重新录入相关信息。";
+                            }
+                        }
+                    });
+                    $("#msg").text(result);
+                }
+            });
+        }
+
+	</script>
+</html>

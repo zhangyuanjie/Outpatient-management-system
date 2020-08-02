@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>封面</title>
+	</head>
+	<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/cover.css}"/>
+	<script type="text/javascript" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script type="text/javascript" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<body>
+		<div class="site-wrapper">
+
+			<div class="site-wrapper-inner">
+
+				<div class="cover-container">
+
+					<div class="masthead clearfix">
+						<div class="inner">
+							<h3 class="masthead-brand">校医院门诊系统</h3>
+							<nav>
+								<ul class="nav masthead-nav">
+								  <li class="active"><a href="#">首页</a></li>
+								  <li><a th:href="@{login}">登录</a></li>
+								  <li><a th:href="@{register}">注册</a></li>
+								</ul>
+							</nav>
+						</div>
+					</div>
+
+					<div class="inner cover">
+						<h1 class="cover-heading">校医院门诊系统</h1>
+						<p class="lead">欢迎使用校医院门诊系统。使用该系统可以进行远程预约挂号，远程查看诊断结果等。登录了解更多功能。</p>
+						<p class="lead">
+							<a href="login" class="btn btn-lg btn-default">登录</a>
+						</p>
+					</div>
+
+					<div class="mastfoot">
+						<div class="inner">
+							<p>design for <a href="login">school hospital</a>, by <a href="###">jike 1603</a>.</p>
+						</div>
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</body>
+</html>

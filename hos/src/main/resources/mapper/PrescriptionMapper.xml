@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.PrescriptionMapper">
+    <insert id="insertPre" parameterType="prescription">
+        insert into t_prescription(prescription_id, medical_card, record_id, department_id, diagnostic, prescription_time, doctor_id, total_price)
+        value (#{prescriptionId}, #{medicalCard}, #{recordId}, #{departmentId}, #{diagnostic}, #{prescriptionTime}, #{doctorId}, #{totalPrice})
+    </insert>
+
+    <select id="selectPreById" parameterType="String" resultType="String">
+        select prescription_id from t_prescription where prescription_id = #{prescriptionId}
+    </select>
+
+    <resultMap id="Pre_Pat_map" type="prescription">
+        <id column="prescription_id" property="prescriptionId" />
+        <result column="medical_card" property="medicalCard" />
+        <result column="record_id" property="recordId" />
+        <result column="doctor_id" property="doctorId" />
+        <result column="prescription_time" property="prescriptionTime" />
+        <result column="total_price" property="totalPrice" />
+        <result column="prescription_status" property="prescriptionStatus" />
+        <result column="admin_id" property="adminId" />
+        <association property="patient" column="medical_card" javaType="patient">
+            <id column="medical_card" property="medicalCard"></id>
+            <result column="patient_id" property="patientId"></result>
+            <result column="patient_name" property="patientName"></result>
+            <result column="patient_sex" property="patientSex"></result>
+            <result column="patient_age" property="patientAge"></result>
+            <result column="patient_type" property="patientType"></result>
+            <result column="patient_phone" property="patientPhone"></result>
+            <result column="patient_address" property="patientAddress"></result>
+            <result column="anamnesis" property="anamnesis"></result>
+        </association>
+    </resultMap>
+
+    <select id="selectPrePatByDocId" parameterType="Integer" resultMap="Pre_Pat_map">
+        select p.*, p2.patient_name from t_prescription p inner join t_patient p2 on p.medical_card = p2.medical_card
+        where doctor_id = #{doctorId} order by prescription_time desc
+    </select>
+
+    <select id="selectPrePatByKey" parameterType="com.zyj.hos.vo.PrescriptionVo" resultMap="Pre_Pat_map">
+        select p.*, p2.* from t_prescription p inner join t_patient p2 on p.medical_card = p2.medical_card
+        <where>
+            <if test="prescriptionId!='' and prescriptionId!=null">
+                and p.prescription_id like concat('%',#{prescriptionId}, '%')
+            </if>
+            <if test="medicalCard!='' and medicalCard!=null">
+                and p.medical_card like concat('%',#{medicalCard}, '%')
+            </if>
+            <if test="recordId!='' and recordId!=null">
+                and p.record_id like concat('%',#{recordId}, '%')
+            </if>
+            <if test="patientName!='' and patientName!=null">
+                and p2.patient_name like concat('%',#{patientName}, '%')
+            </if>
+            <if test="startTime!=null">
+                and p.prescription_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and p.prescription_time &lt; #{endTime}
+            </if>
+        </where>
+        order by p.prescription_time desc
+    </select>
+
+    <select id="selectPrePatByPreId" resultMap="Pre_Pat_map" parameterType="com.zyj.hos.vo.PrescriptionVo">
+        select p.*, p2.* from t_prescription p inner join t_patient p2 on p.medical_card = p2.medical_card where p.prescription_id = #{prescriptionId}
+    </select>
+
+    <select id="selectPrePatByUserId" resultMap="Pre_Pat_map" parameterType="Integer">
+        select p.*, p2.* from t_prescription p inner join t_patient p2 on p.medical_card = p2.medical_card
+        where p.medical_card in ( select medical_card from t_registration where user_id = #{userId} ) and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;=  date(prescription_time) order by p.prescription_time desc
+    </select>
+
+    <select id="selectAllPre" resultMap="Pre_Pat_map">
+        select p.*, p2.* from t_prescription p inner join t_patient p2 on p.medical_card = p2.medical_card
+    </select>
+
+    <update id="updatePrePaid" parameterType="String">
+        update t_prescription set prescription_status = "1" where prescription_id = #{prescriptionId}
+    </update>
+
+    <select id="selectTimeOutPre" resultType="String">
+        select prescription_id from t_prescription where DATE_SUB(now(), INTERVAL 1 Hour) &gt; date(prescription_time) and prescription_status = 0
+    </select>
+
+    <update id="updateTimeOutPre">
+        update t_prescription set prescription_status = -1
+        where DATE_SUB(now(), INTERVAL 1 Hour) &gt; date(prescription_time) and prescription_status = 0
+    </update>
+
+    <!--<select id="selectTodayReg" parameterType="Integer" resultType="Integer">-->
+        <!--select count(1) from t_registration where date(registration_time) = CURDATE()-->
+        <!--<where>-->
+            <!--<if test="doctorId!=null">-->
+                <!--and doctor_id = #{doctorId}-->
+            <!--</if>-->
+        <!--</where>-->
+    <!--</select>-->
+</mapper>

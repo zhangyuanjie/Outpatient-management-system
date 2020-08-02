@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.AdminMapper">
+
+    <select id="selectAdmin" resultType="admin" parameterType="admin">
+      select * from t_admin where admin_account = #{adminAccount} and admin_pwd = #{adminPwd};
+    </select>
+
+    <select id="selectAdminByAccount" resultType="admin" parameterType="String">
+        select * from t_admin where admin_account = #{adminAccount}
+    </select>
+
+    <select id="selectAdminById" resultType="admin" parameterType="Integer">
+        select * from t_admin where admin_id = #{adminId}
+    </select>
+
+    <update id="updateAdminById" parameterType="admin">
+        update t_admin set admin_name = #{adminName}, admin_sex = #{adminSex}, admin_age = #{adminAge}, admin_email = #{adminEmail}, admin_phone =#{adminPhone}
+        where admin_id = #{adminId}
+    </update>
+
+    <select id="selectPwdById" parameterType="Integer" resultType="String">
+        select admin_pwd from t_admin where admin_id = #{adminId}
+    </select>
+
+    <update id="updatePwdById" parameterType="admin">
+        update t_admin set admin_pwd = #{adminPwd} where admin_id = #{adminId}
+    </update>
+
+    <update id="updatePwdByAccount" parameterType="admin">
+        update t_admin set admin_pwd = #{adminPwd} where admin_account = #{adminAccount}
+    </update>
+
+    <select id="selectAllAdmin" resultType="admin">
+      select * from t_admin
+    </select>
+
+    <select id="selectAdminByKey" resultType="admin" parameterType="admin">
+        select * from t_admin
+        <where>
+            <if test="adminAccount!=null and adminAccount!=''">
+                and admin_account like concat('%',#{adminAccount}, '%')
+            </if>
+            <if test="adminName!=null and adminName!=''">
+                and admin_name like concat('%',#{adminName}, '%')
+            </if>
+            <if test="adminSex!=null and adminSex!=''">
+                and admin_sex = #{adminSex}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertAdmin" parameterType="admin">
+        insert into t_admin(admin_account, admin_name, admin_sex, admin_pwd)
+        value(#{adminAccount}, #{adminName}, #{adminSex}, #{adminPwd})
+    </insert>
+</mapper>

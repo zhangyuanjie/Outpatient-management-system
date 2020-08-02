@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.BillMapper">
+    <insert id="insertBill" parameterType="bill">
+        insert into t_bill(bill_id, user_id, bill_type, join_id, bill_details, bill_price, bill_time)
+        value (#{billId}, #{userId}, #{billType}, #{joinId}, #{billDetails}, #{billPrice}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <update id="removeRegBill" parameterType="String">
+        update t_bill set bill_type = "-1", bill_time = CURRENT_TIMESTAMP where join_id = #{joinId}
+    </update>
+
+    <select id="selectBillByUserId" parameterType="Integer" resultType="bill">
+        select * from t_bill where user_id = #{userId} and DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;=  date(bill_time) order by bill_time desc
+    </select>
+
+    <select id="selectDetailsById" parameterType="String" resultType="String">
+        select bill_details from t_bill where bill_id = #{billId}
+    </select>
+
+    <select id="selectAllBill" resultMap="billUserMap">
+        select b.*, u.user_name from t_bill b inner join t_user u on b.user_id = u.user_id order by bill_time desc
+    </select>
+
+    <resultMap id="billUserMap" type="bill">
+        <id column="bill_id" property="billId"></id>
+        <result column="user_id" property="userId"></result>
+        <result column="bill_type" property="billType"></result>
+        <result column="join_id" property="joinId"></result>
+        <result column="bill_details" property="billDetails"></result>
+        <result column="bill_price" property="billPrice"></result>
+        <result column="bill_time" property="billTime"></result>
+        <association property="user" column="user_id" javaType="user">
+            <id column="user_id" property="userId"></id>
+            <result column="user_name" property="userName"></result>
+        </association>
+    </resultMap>
+
+    <select id="selectBillByKey" resultMap="billUserMap" parameterType="com.zyj.hos.vo.BillVo">
+        select b.*, u.user_name from t_bill b inner join t_user u on b.user_id = u.user_id
+        <where>
+            <if test="billId!='' and billId!=null">
+                and b.bill_id like concat('%',#{billId}, '%')
+            </if>
+            <if test="userName!='' and userName!=null">
+                and u.user_name like concat('%',#{userName}, '%')
+            </if>
+            <if test="billType!=null">
+                and b.bill_type = #{billType}
+            </if>
+            <if test="joinId!='' and joinId!=null">
+                and b.join_id = #{joinId}
+            </if>
+            <if test="startTime!=null">
+                and b.bill_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and b.bill_time &lt; #{endTime}
+            </if>
+        </where>
+        order by bill_time desc
+    </select>
+</mapper>

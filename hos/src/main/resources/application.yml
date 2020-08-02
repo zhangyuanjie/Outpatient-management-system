@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/hos?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+    driver-class-name: com.mysql.jdbc.Driver
+
+
+  mail:
+    host: smtp.qq.com
+    username: 1152223522@qq.com
+    password: vhlcaayzrzeoifde
+    protocol: smtp
+    default-encoding: UTF-8
+    auth: true
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+      imap:
+        ssl:
+          socketFactory:
+            fallback: false
+    port: 465
+
+
+  thymeleaf:
+    cache: false
+    check-template: true
+    check-template-location: true
+    #开启MVC thymeleaf 视图解析
+    enabled: true
+    encoding: utf-8
+    prefix: classpath:/templates/
+    suffix: .html
+
+server:
+  servlet:
+    context-path: /hos
+
+mybatis:
+  type-aliases-package: com.zyj.hos.entity
+  mapper-locations: classpath:/mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true  # 开启驼峰命名
+
+logging:
+  level:
+    com.zyj.hos: debug

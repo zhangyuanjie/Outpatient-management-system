@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>挂号信息更多详情</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="registration/registrationDetails.html" th:href="@{registrationManager}">挂号信息</a></li>
+			<li class="active">更多详情</li>
+		</ol>
+
+		<h2 class="page-header">更多详情</h2>
+		<span id="regId" th:text="${registrationId}" class="hidden"></span>
+		<h3 class="page-header">挂号信息</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="registrationId">挂号编号</label>
+				<input class="form-control" id="registrationId" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="departmentName">挂号科室</label>
+				<input class="form-control" id="departmentName" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="doctorName">挂号医生</label>
+				<input class="form-control" id="doctorName" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="appointmentTime">预约时间</label>
+				<input class="form-control" id="appointmentTime" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="registrationType" class="control-label">挂号类别</label>
+				<input class="form-control" id="registrationType" readonly>
+			</div>
+		</div>
+		
+		<h3 class="page-header">病人信息</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="medicalCard">就诊卡号</label>
+				<input class="form-control" id="medicalCard" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientName"class="control-label">病人姓名</label>
+				<input class="form-control" id="patientName" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientSex" class="control-label">病人性别</label>
+				<input class="form-control" id="patientSex" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientAge">病人年龄 </label>
+				<input class="form-control" id="patientAge" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientType" class="control-label">患者类型</label>
+				<input class="form-control" id="patientType" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientPhone">病人联系电话 </label>
+				<input class="form-control" id="patientPhone" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6">
+				<label for="patientAddress">病人联系地址 </label>
+				<input class="form-control" id="patientAddress" readonly>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-6 col-md-8 col-sm-12">
+				<label for="anamnesis" class="control-label">既往病史</label>
+				<textarea rows="4" class="form-control" id="anamnesis" readonly></textarea>
+			</div>
+		</div>
+		
+		<h3 class="page-header">相关费用</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="registrationPrice">门诊费用</label>
+				<input class="form-control" id="registrationPrice" readonly>
+			</div>
+		</div>
+		
+		<h3 class="page-header">预约人相关信息</h3>
+		<div class="row">
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="userName">预约人姓名</label>
+				<input class="form-control" id="userName" readonly>
+			</div>
+			<div class="col-lg-3 col-md-4 col-sm-6 ">
+				<label for="registrationTime">挂号时间</label>
+				<input class="form-control" id="registrationTime" readonly>
+			</div>
+		</div>
+
+		<!-- 确认是否接受预约，模态框 -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">确认框</h4>
+					</div>
+					<div class="modal-body">
+						<label class="control-label">确定要接受该预约？确认接收后，将提醒病人到预定时间来就诊。</label>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-warning" data-dismiss="modal" id="check">确认</button>
+						<button type="button" class="btn btn-primary" data-dismiss="modal">取消</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row" style="text-align: center; margin: 20px 0px">
+			<button type="button" class="btn btn-success" id="accept" data-target="#myModal" data-toggle="modal">接受预约</button>
+		</div>
+	</body>
+	<script type="text/javascript">
+		$("document").ready(function () {
+			var regId = $("#regId").text();
+			$.ajax({
+				async: false,
+				dataType: "json",
+				type: "post",
+                data: {"registrationId": regId},
+				url: "/hos/selectRegMore",
+				success: function (data) {
+					showRegMore(data);
+					if(data.registrationStatus==2){
+					    $("#accept").attr("disable","disable");
+					}
+                }
+			});
+        });
+
+		// 用于展示挂号详细信息
+		function showRegMore(data) {
+			$("#registrationId").val(data.registrationId);
+            $("#departmentName").val(data.department.departmentName);
+            $("#doctorName").val(data.doctor.doctorName);
+            $("#registrationType").val(data.registrationType);
+            $("#appointmentTime").val(data.appointment);
+            $("#medicalCard").val(data.medicalCard);
+            $("#patientName").val(data.patientName);
+            $("#patientSex").val(data.patient.patientSex);
+            $("#patientAge").val(data.patient.patientAge);
+            $("#patientType").val(data.patient.patientType);
+            $("#patientPhone").val(data.patient.patientPhone);
+            $("#patientAddress").val(data.patient.patientAddress);
+            $("#anamnesis").val(data.patient.anamnesis);
+            $("#registrationPrice").val(data.registrationPrice);
+            $("#userName").val(data.user.userName);
+            $("#registrationTime").val(data.registrationTime);
+        }
+
+        // 确认接受预约
+        $("#check").click(function () {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                url: "/hos/doctor/acceptRegById",
+                data: {"registrationId": $("#regId").text()},
+                success: function(data){
+                    if(data=="accept reg success"){
+                        alert("确认成功，可前往我的病人页面查看结果");
+                        location.reload();
+                    }else {
+                        alert("确认失败");
+                    }
+                }
+            });
+        })
+
+	</script>
+</html>

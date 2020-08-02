@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>开处方</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+	<link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}" >
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/map.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+		.modal.fade.in{
+			top:400px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="myPatient.html" th:href="@{myPatient}">我的病人</a></li>
+			<li><a href="writeMedical.html" id="writeMedical">书写病历</a></li>
+			<li class="active">开处方</li>
+		</ol>
+
+		<h2 class="page-header">开处方</h2>
+		<!-- 记录当前病历对应的挂号编号 -->
+		<span class="hidden" id="registrationId" th:text="${registrationId}"></span>
+		<!-- 记录当前病历编号 -->
+		<!--<span class="hidden" id="recId" th:text="${recordId}"></span>-->
+		<form class="form-horizontal">
+			<h3 class="page-header">病人信息</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="prescriptionId" class="control-label">处方编号</label>
+					<input type="text" class="form-control" id="prescriptionId">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientName" class="control-label">患者姓名</label>
+					<input type="text" class="form-control" id="patientName">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientSex" class="control-label">性别</label>
+					<select class="form-control" id="patientSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientAge" class="control-label">患者年龄</label>
+					<input type="text" class="form-control" id="patientAge">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="patientPhone" class="control-label">患者联系电话</label>
+					<input type="text" class="form-control" id="patientPhone">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="recordId" class="control-label">病历编号</label>
+					<input type="text" class="form-control" id="recordId" th:value="${recordId}">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="medicalCard" class="control-label">就诊卡号</label>
+					<input type="text" class="form-control" id="medicalCard">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="prescriptionTime" class="control-label">开具日期</label>
+					<input type="text" class="form-control" id="prescriptionTime">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-6 col-md-8 col-sm-12">
+					<label for="anamnesis" class="control-label">临床诊断</label>
+					<textarea rows="2" class="form-control" id="anamnesis"></textarea>
+				</div>
+			</div>
+			
+			<h3 class="page-header">开药清单</h3><span id="flag" hidden>true</span><!-- 标识，为true时则可以插入处方 -->
+			<table class="table table-striped table-bordered table-hover" id="drugLists">
+				<thead>
+					<tr>
+						<th>编号</th>
+						<th>药品名称</th>
+						<th>规格</th>
+						<th>用法</th>
+						<th>数量</th>
+						<th>单位</th>
+                        <th>单价</th>
+                        <th>总价</th>
+                        <th>操作</th>
+					</tr>
+				</thead>
+				<!-- 此处数据展示，SQL语句使用到了多表查询 -->
+				<tbody id="drugList">
+					
+				</tbody>
+			</table>
+
+			<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+				<div class="panel panel-default">
+					<div class="panel-heading" role="tab" id="headingOne">
+						<h4 class="panel-title">
+							<button role="button" class="btn btn-info" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true"
+									aria-controls="collapseOne" id="searchDrug">
+								点击搜索药品
+							</button>
+						</h4>
+					</div>
+					<div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+									<label for="theId">药品编号</label>
+									<input type="text" class="form-control" id="theId">
+								</div>
+								<div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+									<label for="name">药品名称</label>
+									<input type="text" class="form-control" id="name">
+								</div>
+								<div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+									<label for="type">药品类型</label>
+									<select class="form-control" id="type">
+                                        <option value="">请选择药品类型</option>
+									</select>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-lg-2 col-md-3 col-sm-3 col-xs-6">
+									<button type="button" class="btn btn-default" onclick="searchDrugByKey()">查询</button>
+								</div>
+							</div>
+							<p class='text-center alert alert-warning' id="nullData" style="display: none">暂无匹配结果</p> <!-- 用于当查询无结果时的提示信息 -->
+							<table class="table table-striped table-bordered table-hover" id="drugs">
+								<thead>
+								<tr>
+									<th>编号</th>
+									<th>名称</th>
+									<th>规格</th>
+									<th>类型</th>
+									<th>库存</th>
+									<th>单位</th>
+									<th>单价</th>
+									<th>有效期</th>
+									<th>操作</th>
+								</tr>
+								</thead>
+								<tbody id="result">
+
+								</tbody>
+							</table>
+							<div class="thePage">
+								<nav aria-label="Page navigation" class="text-center" id="pageNav">
+									<ul class="pagination" id="pageDetails">
+
+									</ul>
+								</nav>
+								<p class="text-center alert alert-info">当前 <span id="pageNum"></span> 页，总 <span id="pages"></span> 页，共 <span id="total"></span> 条记录</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 选择药品数量 -->
+			<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h4 class="modal-title" id="myModalLabel">选择添加数量</h4>
+						</div>
+						<div class="modal-body">
+							<span id="drugId" hidden></span><!-- 用于记录当前选中药品编号 -->
+							<nav aria-label="Page navigation" class="text-center" id="pageNav2">
+								<ul class="pagination">
+									<div class="input-group col-sm-offset-4 col-sm-4">
+										<div class="input-group-btn">
+											<button type="button" class="btn btn-default" onclick="des(this)"><span class="glyphicon glyphicon-minus"></span></button>
+										</div>
+										<input type="text" class="form-control" id="num" value="1" onblur="checkTheNum()">
+										<div class="input-group-btn">
+											<button type="button" class="btn btn-default" onclick="add(this)"><span class="glyphicon glyphicon-plus"></span></button>
+										</div>
+									</div>
+								</ul>
+							</nav>
+
+							<p class="text-center alert alert-info">库存 <span id="stock"></span> <span id="unit"></span></p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+							<button type="button" class="btn btn-primary" data-dismiss="modal" onclick="addDrug()">添加</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<h3 class="page-header">其它信息</h3>
+			<div class="row">
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="doctorName" class="control-label">医师</label>
+					<input type="text" class="form-control" id="doctorName" th:value="${session.currentDoctor.doctorName}">
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<label for="totalPrice" class="control-label">药品金额</label>
+					<input type="text" class="form-control" id="totalPrice" >
+				</div>
+			</div>
+
+			<div class="row" style="text-align: center;padding: 50px">
+				<button type="button" class="btn btn-primary" id="sumbitDia">确认提交</button>
+			</div>
+		</form>
+	</body>
+	<script type="text/javascript">
+
+        var drugMap = new Map(); // 通过 map 用于存放当前药品对应的数量，每当药品数量进行添加变化的时候，map 对应的值进行变化，每次查询药品的数量就变成了变化之后的数量
+        drugMap.put("page","1"); // 将页码放入drugmap中
+
+        $("document").ready(function() {
+			$("#writeMedical").attr("href","toWriteMedical?registrationId=" + $("#registrationId").text()); // 设置返回写病历的url
+			$("#prescriptionTime").val(getNowTime()); // 设置开具日期为当前时间
+
+			var time = getCurrentTime();
+			var doctorId = [[${session.currentDoctor.doctorId}]];
+			$("#prescriptionId").val(time + "" + doctorId); // 自动生成处方编号
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectPatByRegId",
+				data: {
+                  "registrationId": $("#registrationId").text()
+				},
+                success: function(data) {
+                    $("#patientName").val(data.patient.patientName);
+                    $("#patientSex").val(data.patient.patientSex);
+                    $("#patientAge").val(data.patient.patientAge);
+                    $("#patientPhone").val(data.patient.patientPhone);
+                    $("#medicalCard").val(data.patient.medicalCard);
+                }
+            });
+
+            $.ajax({
+				async: false,
+				type: "get",
+				dataType: "json",
+				url: "/hos/selectAllDrug",
+				success: function(data) {
+					showDrug(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+					IFrameResize();
+				}
+			});
+
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugType",
+                success: function(data) {
+                    // $("#type").empty();
+                    //循环data
+                    $.each(data,function(i,obj){
+                        $("#type").append("<option value="+obj+">"+obj);
+                    });
+                }
+            });
+		});
+
+        $(function () {
+            $('#collapseOne').on('shown.bs.collapse', function () {
+                IFrameResize();
+            });
+            $('#collapseOne').on('hidden.bs.collapse', function () {
+                IFrameResize();
+            });
+        });
+
+
+        function showDrug(data) {
+            var result = "";
+            // 如果查询结果不存在
+            if(data.list.length==0){
+                $("#nullData").show();
+                $("#drugs").hide();
+            }else {
+                $("#nullData").hide();
+                $("#drugs").show();
+                for (var i = 0; i < data.list.length; i++) {
+                    var drugId = data.list[i].drugId;
+                    var drugNowStock = data.list[i].drugStock;
+                    if(drugMap.containsKey(drugId)!=true){ // map 中暂无该药品
+                        drugMap.put(drugId, drugNowStock);
+					}
+					drugNowStock = drugMap.get(drugId);
+                    // drugMap.put(drugId, drugNowStock);
+                    result += '<tr>' +
+                        '<td>' + data.list[i].drugId + '</td> ' +
+                        '<td>' + data.list[i].drugName + '</td> ' +
+                        '<td>' + data.list[i].drugSpecification + '</td>' +
+                        '<td>' + data.list[i].drugType + '</td>' +
+                        '<td>' + drugNowStock + '</td>' +
+                        '<td>' + data.list[i].drugUnit + '</td>' +
+                        '<td>' + data.list[i].drugPrice + '</td>' +
+                        '<td>' + data.list[i].drugTime + '</td>' +
+                        '<td>' +
+                        '<button type="button" class="btn btn-primary" data-target="#myModal" data-toggle="modal" onclick="setNum(\''+ data.list[i].drugId + '\', \''+ drugNowStock +'\',\''+ data.list[i].drugUnit +'\')">添加</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+            }
+            // console.log(drugMap);
+            $("#pageNum").text(data.pageNum);
+            $("#pages").text(data.pages);
+            $("#total").text(data.total);
+            $("#result").html(result);
+        }
+        
+        function refreshDrug() {
+            var page = drugMap.get("page");
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugByKey",
+                data: {
+                    "pageNum": page,
+                    "drugId": $("#theId").val(),
+                    "drugName": $("#name").val(),
+                    "drugType": $("#type option:selected").val()
+                },
+                success: function (data) {
+                    showDrug(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            });
+        }
+
+        function setNum(drugId, drugStock, drugUnit) {
+			$("#drugId").text(drugId);
+			$("#stock").text(drugStock);
+			$("#unit").text(drugUnit);
+            $("#num").val("0");
+        }
+
+        function add(obj) {
+			var now = parseInt($("#num").val()) + 1;
+			var sum = parseInt($("#stock").text());
+			if(now <= sum){
+                $(obj).attr("disable",false);
+                $("#num").val(now);
+            }else {
+			    $(obj).attr("disable",true);
+			}
+        }
+
+        function checkTheNum() {
+            if(checkNum("#num")==false){
+                console.log("不是数字");
+                $("#num").val(0);
+			}
+			var num = parseInt($("#num").val());
+            var sum = parseInt($("#stock").text());
+            if(num < 1){
+                $("#num").val(0);
+			}else if(num > sum){
+                $("#num").val(sum);
+			}
+        }
+
+        function des(obj) {
+            var now = parseInt($("#num").val()) - 1;
+            var sum = parseInt($("#stock").text());
+            if((now) > 0){
+                $(obj).attr("disable",false);
+                $("#num").val(now);
+            }else {
+                $(obj).attr("disable",true);
+            }
+        }
+
+        // 根据条件
+        function searchDrugByKey() {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugByKey",
+                data: {
+                    "drugId": $("#theId").val(),
+					"drugName": $("#name").val(),
+					"drugType": $("#type option:selected").val()
+                },
+				success: function (data) {
+                    showDrug(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+					IFrameResize();
+                }
+            });
+        }
+
+        // 点击翻页时触发的函数
+        function nextPage(page){
+            drugMap.put("page",page);// 将当前查询的页数保存在map中
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugByKey",
+                data: {
+                    "pageNum": page,
+                    "drugId": $("#theId").val(),
+                    "drugName": $("#name").val(),
+                    "drugType": $("#type option:selected").val()
+                },
+                success: function (data) {
+                    showDrug(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            });
+        }
+
+        var total = parseFloat("0"); // 设定全局变量：总价钱
+        function addDrug() { // 将药品添加到药品清单上，库存数即 map 中对应的库存数量
+			var drugId = $("#drugId").text();
+			var result = "";
+			var num = $("#num").val();
+			if(num=="0"){
+			    return false;
+            }
+			var stock = drugMap.get(drugId);
+			var lastStock = stock - num;
+			drugMap.put(drugId, lastStock);
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDrugById",
+                data:{
+                    "drugId": drugId
+                },
+                success: function(data) {
+                    total += parseFloat((data.drugPrice * num).toFixed(2));
+					result += '<tr>' +
+                        '<td name="drugId">' + data.drugId + '</td> ' +
+                        '<td name="drugName">' + data.drugName + '</td> ' +
+                        '<td name="drugSpecification">' + data.drugSpecification + '</td>' +
+                        '<td name="drugWay">' + data.drugWay + '</td>' +
+                        '<td name="num">' + num + '</td>' +
+                        '<td name="drugUnit">' + data.drugUnit + '</td>' +
+                        '<td name="drugPrice">' + data.drugPrice + '</td>' +
+                        '<td name="total">' + (data.drugPrice * num).toFixed(2) + '</td>' +
+                        '<td>' +
+                        '<button type="button" class="btn btn-warning" onclick="delDrug(this)">删除</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+            });
+            $("#drugList").append(result);
+            $("#totalPrice").val(total.toFixed(2));
+            refreshDrug(); // 刷新药品库存
+            IFrameResize();
+        }
+
+        function delDrug(obj) {
+			var drugId = $(obj).parent().parent().children().eq(0).text();
+			var num = $(obj).parent().parent().children().eq(4).text();
+			var nowStock = drugMap.get(drugId);
+			var stock = parseInt(num) + parseInt(nowStock);
+            drugMap.put(drugId, stock);
+            $(obj).parent().parent().remove();
+            refreshDrug(); // 刷新药品库存
+        }
+
+        $("#sumbitDia").click(function () {
+            // 判断处方是否已经存在
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                url: "/hos/selectPreById",
+                data: {
+                    "prescriptionId": $("#prescriptionId").val()
+                },
+                success: function (data) {
+                    if(data=="pre is exist"){
+                        alert("处方已经提交，请勿重复提交，或退出重进重新开处方");
+                        return false;
+                    }else {
+                        $("#flag").text("true");
+                        $("#drugList").find("tr").each(function () {
+                            var trTest = $(this);
+                            var tdArr = $(this).children();
+                            var drugId = tdArr.eq(0).text();// 药品编号
+                            var drugName = tdArr.eq(1).text();// 药品名称
+                            var drugSpecification = tdArr.eq(2).text();//药品规格
+                            var drugWay = tdArr.eq(3).text();// 药品用法
+                            var drugNum = tdArr.eq(4).text();// 药品数量
+                            var drugUnit = tdArr.eq(5).text();// 药品单位
+                            var time = getCurrentTime();
+                            var doctorId = [[${session.currentDoctor.doctorId}]];
+                            var outId = time + doctorId;
+                            $.ajax({
+                                async: false,
+                                type: "get",
+                                dataType: "text",
+                                url: "/hos/insertDrugList",
+                                data: {
+                                    "outId": outId, // 出库编号，自动生成：当前时间
+                                    "drugId": drugId,
+                                    "drugNum": drugNum,
+                                    "prescriptionId": $("#prescriptionId").val()
+                                },
+                                success: function (data) {
+                                    if(data=="stock is not enough"){
+                                        $("#flag").text("false");
+                                        $(this).css("color","red");
+                                    }else if(data=="insrt drugList success"){
+                                        console.log("插入药品成功");
+                                    }
+                                }
+                            });
+                        });
+
+                        if($("#flag").text()=="false"){
+                            alert("部分药品数量出现变化，请删除重新选择数量");
+                            return false;
+                        }else {
+                            $.ajax({
+                                async: false,
+                                type: "get",
+                                dataType: "text",
+                                url: "/hos/insertPrescription",
+                                data: {
+                                    "prescriptionId": $("#prescriptionId").val(),
+                                    "medicalCard": $("#medicalCard").val(),
+                                    "recordId": $("#recordId").val(),
+                                    "departmentId": [[${session.currentDoctor.departmentId}]],
+                                    "dianostic": $("#dianostic").val(),
+                                    "prescriptionTime": $("#prescriptionTime").val(),
+                                    "doctorId": [[${session.currentDoctor.doctorId}]],
+                                    "totalPrice": $("#totalPrice").val()
+                                },
+                                success: function (data) {
+                                    if(data=="insert pre success"){
+                                        alert("处方提交成功");
+                                    }else {
+                                        alert("处方提交失败，请稍后再试");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+
+
+
+        });
+
+	</script>
+</html>

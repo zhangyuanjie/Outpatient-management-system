@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.DrugListMapper">
+    <insert id="insertDrugList" parameterType="drugList">
+        insert into t_druglist(drug_id, drug_num, create_time, prescription_id)
+        value (#{drugId}, #{drugNum}, CURRENT_TIMESTAMP, #{prescriptionId})
+    </insert>
+
+    <resultMap id="drug_list_map" type="drugList">
+        <id column="list_id" property="listId" />
+        <result column="drug_id" property="drugId" />
+        <result column="drug_num" property="drugNum" />
+        <result column="create_time" property="createTime" />
+        <result column="prescription_id" property="prescriptionId" />
+        <association property="drug" column="drug_id" javaType="drug">
+            <id column="drug_id" property="drugId"></id>
+            <result column="drug_name" property="drugName"/>
+            <result column="drug_type" property="drugType"/>
+            <result column="drug_specification" property="drugSpecification"/>
+            <result column="drug_way" property="drugWay"/>
+            <result column="drug_function" property="drugFunction"/>
+            <result column="drug_stock" property="drugStock"/>
+            <result column="drug_unit" property="drugUnit"/>
+            <result column="drug_price" property="drugPrice"/>
+            <result column="drug_time" property="drugTime"/>
+            <result column="drug_provider" property="drugProvider"/>
+        </association>
+    </resultMap>
+
+    <select id="selectDrugByPreId" parameterType="String" resultMap="drug_list_map">
+        select d1.*, d2.* from t_druglist d1 inner join t_drug d2 on d1.drug_id = d2.drug_id
+        where d1.prescription_id = #{prescription_id}
+    </select>
+
+    <select id="selectTimeOutDrug" parameterType="String" resultType="druglist">
+        select * from t_druglist
+        <where>
+            <if test="list!=null and list.size() > 0">
+                <foreach item="prescriptionId" collection="list" open="prescription_id in (" separator="," close=")">
+                    #{prescriptionId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

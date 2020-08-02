@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<link rel="stylesheet" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}">
+	<script type="text/javascript" src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script type="text/javascript" src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">个人信息维护</li>
+		</ol>
+		
+		<h2 class="page-header">个人信息维护</h2>
+		<span id="doctorId" hidden></span><!-- 用于记录当前登录的医生id -->
+		<form class="form-horizontal" style="height: 760px">
+			<div class="form-group">
+				<label for="doctorName" class="col-sm-2 control-label"><span style="color:red;">* </span>姓名</label>
+				<div class="col-sm-3">
+					<input class="form-control col-lg-4" id="doctorName" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorAccount" class="col-sm-2 control-label">账号</label>
+				<div class="col-sm-3">
+					<input class="form-control col-lg-4" id="doctorAccount" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorType" class="col-sm-2 control-label">职称</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="doctorType" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorSex" class="col-sm-2 control-label">性别</label>
+				<div class="col-sm-3">
+					<select class="form-control" id="doctorSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorAge" class="col-sm-2 control-label"><span style="color:red;">* </span>年龄</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="doctorAge" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorEmail" class="col-sm-2 control-label"><span style="color:red;">* </span>邮箱</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="doctorEmail" onblur="checkEmailForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorPhone" class="col-sm-2 control-label" ><span style="color:red;">* </span>联系电话</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="doctorPhone" onblur="checkPhoneForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorAddress" class="col-sm-2 control-label" ><span style="color:red;">* </span>联系地址</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="doctorAddress" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorDetails" class="col-sm-2 control-label" >备注</label>
+				<div class="col-sm-3">
+					<textarea id="doctorDetails" class="form-control" rows="4"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="submit" class="btn btn-primary" id="updateDoctor">提交修改</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script>
+		$("document").ready(function () {
+			$.ajax({
+				async: false,
+				dataType: "json",
+				type: "get",
+				url: "/hos/doctor/selectCurrentDoctor",
+				success: function (data) {
+					showResult(data);
+                }
+			});
+        });
+
+		function showResult(data) {
+		    $("#doctorId").text(data.doctorId);
+			$("#doctorName").val(data.doctorName);
+            $("#doctorAccount").val(data.doctorAccount);
+            $("#doctorType").val(data.doctorType);
+            $("#doctorSex").val(data.doctorSex);
+            $("#doctorAge").val(data.doctorAge);
+            $("#doctorEmail").val(data.doctorEmail);
+            $("#doctorPhone").val(data.doctorPhone);
+            $("#doctorAddress").val(data.doctorAddress);
+            $("#doctorDetails").val(data.doctorDetails);
+        }
+
+		// 点击提交，对个人信息进行修改
+		$("#updateDoctor").click(function () {
+		    if (checkForm()==false){
+		        alert("请正确填写相关信息");
+		        return false;
+			}
+            event.preventDefault();
+			$.ajax({
+				async: false,
+				type: "post",
+				dataType: "text",
+				data: {
+					"doctorId": $("#doctorId").text(),
+					"doctorName": $("#doctorName").val(),
+					"doctorSex": $("#doctorSex").val(),
+                    "doctorAge": $("#doctorAge").val(),
+                    "doctorEmail": $("#doctorEmail").val(),
+                    "doctorPhone": $("#doctorPhone").val(),
+                    "doctorAddress": $("#doctorAddress").val(),
+                    "doctorDetails": $("#doctorDetails").val()
+				},
+				url: "/hos/doctor/updateDoctorById",
+				success: function (data) {
+					if (data=="update doctor success"){
+					    alert("修改成功");
+					    location.reload();
+					} else {
+					    alert("发生未知错误，修改失败，请稍后再试");
+					}
+                }
+			});
+        });
+		
+		function checkForm() {
+            if(isNullForm("#doctorName")==false){
+                return false;
+            }
+			if(isNullForm("#doctorAge")==false){
+			    return false;
+			}
+			if (checkEmailForm("#doctorEmail")==false){
+			    return false;
+			}
+            if(checkPhoneForm("#doctorPhone")==false){
+                return false;
+            }
+            if(isNullForm("#doctorAddress")==false){
+                return false;
+            }
+            return true;
+        }
+       
+	</script>
+</html>

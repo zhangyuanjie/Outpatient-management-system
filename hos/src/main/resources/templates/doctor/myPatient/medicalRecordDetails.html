@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="UTF-8">
+        <title>病历详情</title>
+    </head>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+    <link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}" >
+    <script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+    <script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+    <script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+    <script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+    <script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+    <style type="text/css">
+        .page-header {
+            margin-top: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #31BCD1;
+        }
+
+        .row div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+    <body>
+        <ol class="breadcrumb">
+            <li><a href="myPatient.html" th:href="@{myDiagnostic}">诊断记录</a></li>
+            <li class="active">病历详情</li>
+        </ol>
+
+        <form class="form-horizontal">
+            <h3 class="page-header">基本信息</h3>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="recordId" class="control-label">病历编号</label>
+                    <input type="text" class="form-control" id="recordId" th:value="${recordId}" readonly>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="medicalCard" class="control-label">就诊卡号</label>
+                    <input type="text" class="form-control" id="medicalCard" readonly>
+                </div>
+            </div>
+            <h3 class="page-header">病人信息</h3>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="patientName" class="control-label">患者姓名</label>
+                    <input type="text" class="form-control" id="patientName" readonly>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="patientSex" class="control-label">性别</label>
+                    <input type="text" class="form-control" id="patientSex" readonly>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="patientAge" class="control-label">患者年龄</label>
+                    <input type="text" class="form-control" id="patientAge" readonly>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="patientPhone" class="control-label">患者联系电话</label>
+                    <input type="text" class="form-control" id="patientPhone" readonly>
+                </div>
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <label for="patientAddress" class="control-label">患者联系地址</label>
+                    <input type="text" class="form-control" id="patientAddress" readonly>
+                </div>
+            </div>
+            <h3 class="page-header">诊断结果</h3>
+            <ul class="list-group" id="diagnostic">
+                <!-- 显示诊断结果 -->
+            </ul>
+
+        </form>
+    </body>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+               async: false,
+               dateType: "json",
+               type: "get",
+               data: { "recordId": $("#recordId").val() },
+               url: "/hos/selectRecAndDiaById",
+               success: function (data) {
+                   var result = "";
+                   $("#patientId").text(data.patient.patientId);
+                   $("#medicalCard").val(data.patient.medicalCard);
+                   $("#patientName").val(data.patient.patientName);
+                   $("#patientSex").val(data.patient.patientSex);
+                   $("#patientAge").val(data.patient.patientAge);
+                   $("#patientPhone").val(data.patient.patientPhone);
+                   $("#patientAddress").val(data.patient.patientAddress);
+                   for (var i=0;i<data.diagnostics.length;i++){
+                       result += '<li class="list-group-item">' +
+                           '<div class="row">' +
+                           '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                           '<label class="control-label">诊断科室</label>' +
+                           '<input type="text" class="form-control" value=" '+ data.diagnostics[i].department.departmentName +'" readonly>' +
+                           '</div>' +
+                           '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                           '<label class="control-label">诊断医生</label>' +
+                           '<input type="text" class="form-control" value="' + data.diagnostics[i].doctor.doctorName + '" readonly>' +
+                           '</div>' +
+                           '<div class="col-lg-3 col-md-4 col-sm-6">' +
+                           '<label class="control-label">诊断时间</label>' +
+                           '<input type="text" class="form-control" value="' + data.diagnostics[i].diagnosticTime + '" readonly>' +
+                           '</div>' +
+                           '</div>' +
+                           '<div class="row">' +
+                           '<div class="col-lg-6 col-md-8 col-sm-12">' +
+                           '<label for="anamnesis" class="control-label">诊断结果</label>' +
+                           '<textarea rows="6" class="form-control" id="anamnesis" readonly>'+ data.diagnostics[i].diagnosticResult + '</textarea>' +
+                           '</div>' +
+                           '</div>' +
+                           '</li>';
+                   }
+                   $("#diagnostic").html(result);
+               }
+            });
+        })
+    </script>
+
+</html>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.UserMapper">
+    <!-- 获取用户 -->
+    <select id="selectUser" resultType="user" parameterType="user">
+      select * from t_user where user_account = #{userAccount} and user_pwd = #{userPwd}
+    </select>
+
+    <select id="selectUserByAccount" resultType="user" parameterType="String">
+      select * from t_user where user_account = #{userAccount}
+    </select>
+
+
+    <select id="selectAllUser" resultType="user">
+      select * from t_user
+    </select>
+
+    <select id="selectUserByKey" resultType="user" parameterType="user">
+        select * from t_user
+        <where>
+            <if test="userAccount!=null and userAccount!=''">
+                and user_account like concat('%',#{userAccount}, '%')
+            </if>
+            <if test="userName!=null and userName!=''">
+                and user_name like concat('%',#{userName}, '%')
+            </if>
+            <if test="userSex!=null and userSex!=''">
+                and user_sex = #{userSex}
+            </if>
+            <if test="userType!=null and userType!=''">
+                and user_type = #{userType}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectUserById" parameterType="Integer" resultType="user">
+        select * from t_user where user_id = #{userId}
+    </select>
+
+    <update id="updateUserById" parameterType="user">
+        update t_user set user_name = #{userName}, user_sex = #{userSex},user_age = #{userAge},user_email = #{userEmail},user_phone = #{userPhone},user_address = #{userAddress}
+        where user_id = #{userId}
+    </update>
+
+    <select id="selectPwdById" resultType="String" parameterType="Integer">
+        select user_pwd from t_user where user_id = #{userId}
+    </select>
+
+    <update id="updatePwdById" parameterType="User">
+        update t_user set user_pwd = #{userPwd} where user_id = #{userId}
+    </update>
+
+    <update id="updatePwdByAccount" parameterType="User">
+        update t_user set user_pwd = #{userPwd} where user_account = #{userAccount}
+    </update>
+
+    <insert id="insertUser" parameterType="user">
+        insert into t_user(user_account, user_name, user_sex, user_type, user_pwd)
+        value(#{userAccount}, #{userName}, #{userSex}, #{userType}, #{userPwd})
+    </insert>
+
+    <insert id="insertUserByEmail" parameterType="user">
+        insert into t_user(user_account, user_name, user_email, user_type, user_pwd)
+        value(#{userAccount}, #{userName}, #{userEmail}, "其他用户", #{userPwd})
+    </insert>
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.PatientMapper">
+    <insert id="insertPatient" parameterType="patient">
+        insert into t_patient(medical_card, patient_name, patient_sex, patient_age, patient_phone, patient_address, anamnesis)
+        value(#{medicalCard}, #{patientName}, #{patientSex}, #{patientAge}, #{patientPhone}, #{patientAddress}, #{anamnesis})
+    </insert>
+
+    <update id="updatePatById" parameterType="patient">
+        update t_patient set patient_name = #{patientName}, patient_sex = #{patientSex}, patient_age = #{patientAge}, patient_type = #{patientType},
+         patient_phone = #{patientPhone}, patient_address = #{patientAddress},anamnesis = #{anamnesis}
+         where medical_card = #{medicalCard}
+    </update>
+
+    <select id="selectCard" parameterType="String" resultType="patient">
+        select * from t_patient where medical_card = #{medicalCard}
+    </select>
+
+    <update id="updateTypeByCard" parameterType="String">
+        update t_patient set patient_type = "复诊" where medical_card = #{medicalCard}
+    </update>
+
+    <select id="selectPatByRecId" parameterType="String" resultType="patient">
+        select * from t_patient p where medical_card = (select medical_card from t_medicalrecord where record_id = #{recordId})
+    </select>
+</mapper>

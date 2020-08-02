@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.DoctorMapper">
+    <select id="selectDoctorByAccount" resultType="doctor" parameterType="String">
+        select * from t_doctor where doctor_account = #{dotorAccount}
+    </select>
+
+    <select id="selectDoctor" resultType="doctor" parameterType="doctor">
+        select * from t_doctor where doctor_account = #{dotorAccount} and doctor_pwd = #{dpctorPwd}
+    </select>
+
+    <select id="selectDoctorByDepId" resultType="doctor" parameterType="Integer">
+        select * from t_doctor where department_id = #{departmentId}
+    </select>
+
+    <select id="selectDoctorById" resultType="doctor" parameterType="Integer">
+        select * from t_doctor where doctor_id = #{dotorId}
+    </select>
+    
+    <resultMap id="doctorDepMap" type="doctor">
+        <id property="doctorId" column="doctor_id"></id>
+        <result property="doctorAccount" column="doctor_account"></result>
+        <result property="doctorName" column="doctor_name"></result>
+        <result property="doctorPwd" column="doctor_pwd"></result>
+        <result property="doctorAge" column="doctor_age"></result>
+        <result property="doctorSex" column="doctor_sex"></result>
+        <result property="doctorType" column="doctor_type"></result>
+        <result property="doctorEmail" column="doctor_email"></result>
+        <result property="doctorPhone" column="doctor_phone"></result>
+        <result property="doctorAddress" column="doctor_address"></result>
+        <result property="doctorStatus" column="doctor_status"></result>
+        <result property="workTime" column="work_time"></result>
+        <result property="doctorDetails" column="doctor_details"></result>
+        <result property="attendancePrice" column="attendance_price"></result>
+        <association property="department" column="department_id" javaType="department">
+            <id property="departmentId" column="department_id"></id>
+            <result property="departmentName" column="department_name"></result>
+        </association>
+    </resultMap>
+    <select id="selectDoctorDepById" resultMap="doctorDepMap" parameterType="Integer">
+      select u.*, a.*
+      from
+      t_doctor u inner join t_department a on u.department_id = a.department_id where u.doctor_id=#{doctor_id};
+    </select>
+
+    <select id="selectDoctorByKey" resultMap="doctorDepMap" parameterType="com.zyj.hos.vo.DoctorVo">
+        select d.*, d2.* from t_doctor d inner join t_department d2 on d.department_id = d2.department_id
+        <where>
+            <if test="doctorName!=null and doctorName!=''">
+                and d.doctor_name like concat('%',#{doctorName}, '%')
+            </if>
+            <if test="doctorSex!=null and doctorSex!=''">
+                and d.doctor_sex = #{doctorSex}
+            </if>
+            <if test="doctorStatus!=null and doctorStatus!=''">
+                and d.doctor_status = #{doctorStatus}
+            </if>
+            <if test="doctorType!=null and doctorType!=''">
+                and d.doctor_type like concat('%',#{doctorType}, '%')
+            </if>
+            <if test="departmentName!=null and departmentName!=''">
+                and d2.department_name = #{departmentName}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAllDoctor" resultMap="doctorDepMap">
+        select d.*, d2.* from t_doctor d inner join t_department d2 on d.department_id = d2.department_id
+    </select>
+
+    <update id="updateDoctorById" parameterType="doctor">
+         update t_doctor set doctor_name = #{doctorName}, doctor_sex = #{doctorSex}, doctor_sex = #{doctorSex}, doctor_email = #{doctorEmail}, doctor_phone = #{doctorPhone}, doctor_address = #{doctorAddress}
+         , doctor_details = #{doctorDetails}
+         where doctor_id = #{doctorId}
+    </update>
+
+    <select id="selectPwdById" resultType="String" parameterType="Integer">
+        select doctor_pwd from t_doctor where doctor_id = #{doctorId}
+    </select>
+
+    <update id="updatePwdById" parameterType="doctor">
+        update t_doctor set doctor_pwd = #{doctorPwd} where doctor_id = #{doctorId}
+    </update>
+
+    <update id="updatePwdByAccount" parameterType="doctor">
+        update t_doctor set doctor_pwd = #{doctorPwd} where doctor_account = #{doctorAccount}
+    </update>
+
+    <select id="selectDocByAccount" parameterType="String" resultType="String">
+        select doctor_account from t_doctor where doctor_account = #{doctorAccount}
+    </select>
+
+    <insert id="insertDoctor">
+        insert into t_doctor(doctor_account, doctor_name, doctor_pwd, doctor_sex, doctor_type, doctor_status, attendance_price, work_time, department_id)
+        value (#{doctorAccount}, #{doctorName}, #{doctorPwd}, #{doctorSex}, #{doctorType},"坐诊", #{attendancePrice},#{workTime}, #{departmentId})
+    </insert>
+
+    <update id="updateDocById" parameterType="doctor">
+        update t_doctor set doctor_type = #{doctorType}, doctor_status = #{doctorStatus},attendance_price = #{attendancePrice}, work_time = #{workTime},doctor_details = #{doctorDetails}, department_id = #{departmentId} where doctor_id = #{doctorId}
+    </update>
+</mapper>

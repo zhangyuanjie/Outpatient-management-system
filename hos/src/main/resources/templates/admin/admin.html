@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>首页</title>
+		<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+		<link rel="stylesheet" type="text/css" th:href="@{~/hos/static/css/index.css}"/>
+		<script type="text/javascript" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+		<script type="text/javascript" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+        <script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+    </head>
+	<body>
+		<nav class="navbar navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+					 aria-expanded="false">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#">校医院门诊系统</a>
+				</div>
+
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav navbar-right">
+                        <span class="navbar-text">当前时间：</span>
+                        <span id="currentTime" class="navbar-text" style="margin: 15px 0px"></span>
+                        <span class="navbar-text" style="margin-right: 0px">欢迎你：</span>
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+								<div th:text="${session.currentAdmin.adminName}" style="display: inline"></div>
+								<span class="glyphicon glyphicon-chevron-right"></span></a>
+							<ul class="dropdown-menu">
+								<li><a href="registrationManager" target="mainframe" id="reg">挂号管理</a></li>
+								<li><a href="recordManager" target="mainframe" id="rec">病历管理</a></li>
+                                <li><a href="prescriptionManager" target="mainframe" id="pre">处方管理</a></li>
+                                <li><a href="billManager" target="mainframe" id="bill">账单管理</a></li>
+                                <li role="separator" class="divider"></li>
+								<li><a th:href="@{~/hos/logout}"><span class="glyphicon glyphicon-log-out"></span> 注销</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div><!-- /.navbar-collapse -->
+			</div><!-- /.container-fluid -->
+		</nav>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-sm-3 col-md-2 sidebar">
+					<h3 class="title"><span class="glyphicon glyphicon-ok-sign"></span>&nbsp;管理员</h3>
+					<ul class="nav nav-sidebar" id="meau">
+                        <li class="active">
+							<a href="#userManager"data-toggle="collapse" class="nav-header" data-parent="hiddendiv" aria-expanded="true">
+								<span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;用户信息管理
+							</a>
+							<ul id="userManager" class="nav nav-list collapse in" aria-expanded="true">
+								<li><a href="userManager" target="mainframe"><span>用户查询</span></a></li>
+								<li><a href="userAdd" target="mainframe"><span>新增教师/学生账号</span></a></li>
+							</ul>
+						</li>
+                        <li>
+                            <a href="#admin" data-toggle="collapse" class="nav-header collapsed" data-parent="hiddendiv">
+                                <span class="glyphicon glyphicon-list-alt"></span>&nbsp;&nbsp;管理员信息管理
+                            </a>
+                            <ul id="admin" class="nav nav-list collapse secondmenu">
+                                <li><a href="adminManager" target="mainframe"><span>管理员查询</span></a></li>
+                                <li><a href="adminAdd" target="mainframe"><span>新增管理员</span></a></li>
+                            </ul>
+                        </li>
+						<li>
+							<a href="#department" data-toggle="collapse" class="nav-header collapsed" data-parent="hiddendiv">
+								<span class="glyphicon glyphicon-list-alt"></span>&nbsp;&nbsp;科室信息管理
+							</a>
+							<ul id="department" class="nav nav-list collapse secondmenu">
+								<li><a href="departmentManager" target="mainframe"><span>科室查询</span></a></li>
+								<li><a href="departmentAdd" target="mainframe"><span>新增科室</span></a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="#doctor" data-toggle="collapse" class="nav-header collapsed" data-parent="hiddendiv">
+								<span class="glyphicon glyphicon-plus-sign"></span>&nbsp;&nbsp;医生信息管理
+							</a>
+							<ul id="doctor" class="nav nav-list collapse secondmenu">
+								<li><a href="doctorManager" target="mainframe"><span>医生信息查询/修改</span></a></li>
+								<li><a href="doctorAdd" target="mainframe"><span>新增医生账号</span></a></li>
+							</ul>
+						</li>
+						<li id="regLi">
+							<a href="registrationManager" target="mainframe"><span class="glyphicon glyphicon-duplicate"></span>&nbsp;&nbsp;挂号信息管理</a>
+						</li>
+						<li id="recLi">
+							<a href="recordManager" target="mainframe"><span class="glyphicon glyphicon-file"></span>&nbsp;&nbsp;病历信息管理</a>
+						</li>
+						<li id="preLi">
+							<a href="prescriptionManager" target="mainframe"><span class="glyphicon glyphicon-tasks"></span>&nbsp;&nbsp;处方信息管理</a>
+						</li>
+						<li id="billLi">
+							<a href="billManager" target="mainframe"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;&nbsp;账单管理</a>
+						</li>
+						<li>
+							<a href="#medicine" data-toggle="collapse" class="nav-header collapsed" data-parent="hiddendiv">
+								<span class="glyphicon glyphicon-search"></span>&nbsp;&nbsp;药品信息管理
+							</a>
+							<ul id="medicine" class="nav nav-list collapse secondmenu">
+								<li><a href="medicineManager" target="mainframe"><span>药品查询/新增</span></a></li>
+								<li><a href="medicineInLog" target="mainframe"><span>药品入库记录</span></a></li>
+								<li><a href="medicineOutLog" target="mainframe"><span>药品出库记录</span></a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="#user" data-toggle="collapse" class="nav-header collapsed" data-parent="hiddendiv">
+								<span class="glyphicon glyphicon-user"></span>&nbsp;&nbsp;个人中心
+							</a>
+							<ul id="user" class="nav nav-list collapse secondmenu">
+								<li><a href="updateSelf" target="mainframe"><span></span>个人信息维护</a></li>
+								<li><a href="updatePwd" target="mainframe"><span></span>修改密码</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+				<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+					<iframe id="urlIframe" name="mainframe" src="userManager" frameborder="0" scrolling="no" width="100%" onload="iframeAutoHeight()"></iframe>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+
+        $(document).ready(function () {
+            $.ajax({
+                async: false,
+                dateType: "text",
+                url: "/hos/timeOutReg",
+                success: function (data) {
+                    console.log(data);
+                }
+            });
+            dealTimeOutPre();
+
+            var dateStr = getNowTime();
+            // 将时间放置到span内
+            $("#currentTime").text(dateStr);
+            // 每隔一秒，再放置一次最新的时间
+            setInterval(function(){
+                $("#currentTime").text(getNowTime());
+            },1000);
+        });
+        function dealTimeOutPre(){
+            var time = getCurrentTime();
+            var inId = time;
+            $.ajax({
+                async: false,
+                dateType: "text",
+                url: "/hos/updateTimeOutPre",
+                data:{"inId":inId},
+                success: function (data) {
+                    console.log(data);
+                }
+            });
+            setTimeout(function() {
+                dealTimeOutPre()// 关键处-定时循环调用
+            }, 3600000)
+        }
+
+        $("#meau li").click(function(e) {
+			$("#meau li").removeClass("active");
+			$(this).addClass("active");
+		});
+
+        $("#reg").click(function() {
+            $("#meau li").removeClass("active");
+            $("#regLi").addClass("active");
+        });
+
+        $("#rec").click(function() {
+            $("#meau li").removeClass("active");
+            $("#recLi").addClass("active");
+        });
+
+        $("#pre").click(function() {
+            $("#meau li").removeClass("active");
+            $("#preLi").addClass("active");
+        });
+
+        $("#bill").click(function() {
+            $("#meau li").removeClass("active");
+            $("#billLi").addClass("active");
+        });
+
+		$(function() {
+			$(".dropdown").click(function(e) {
+				/*切换折叠指示图标*/
+				$(this).find("span").toggleClass("glyphicon glyphicon-chevron-up");
+				$(this).find("span").toggleClass("glyphicon glyphicon-chevron-down");
+			});
+		});
+
+        function iframeAutoHeight() {
+            var iframe = document.getElementById("urlIframe");
+            // iframe.height=0;
+            $("#urlIframe").removeAttr("style");
+            if (navigator.userAgent.indexOf("MSIE") > 0 || navigator.userAgent.indexOf("rv:11") > 0 || navigator.userAgent.indexOf(
+                "Firefox") > 0) {
+                iframe.height = 0;
+                iframe.height = iframe.contentWindow.document.body.scrollHeight;
+                // iframe.css("height",0);
+                // iframe.css("height",iframe.contentWindow.document.body.scrollHeight);
+                setTimeout(iframeAutoHeight2, 10);
+            } else {
+                iframe.height = 0;
+                iframe.height = iframe.contentWindow.document.documentElement.scrollHeight;
+                // iframe.css("height",0);
+                // iframe.css("height",iframe.contentWindow.document.documentElement.scrollHeight);
+                setTimeout(iframeAutoHeight2, 10);
+            }
+        }
+        // 再次刷新，确保刷新成功
+        function iframeAutoHeight2() {
+            var iframe = document.getElementById("urlIframe");
+            $("#urlIframe").removeAttr("style"); // 用于清除其它自适应函数的影响
+            if (navigator.userAgent.indexOf("MSIE") > 0 || navigator.userAgent.indexOf("rv:11") > 0 || navigator.userAgent.indexOf(
+                "Firefox") > 0) {
+                iframe.height = 0;
+                iframe.height = iframe.contentWindow.document.body.scrollHeight;
+            } else {
+                iframe.height = 0;
+                iframe.height = iframe.contentWindow.document.documentElement.scrollHeight;
+            }
+        }
+		$(window).resize(function() {
+			window.onresize = iframeAutoHeight();
+			iframeAutoHeight();
+		});
+	</script>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="UTF-8">
+        <title>修改药品</title>
+    </head>
+    <link rel="stylesheet" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}">
+    <script type="text/javascript" src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+    <script type="text/javascript" src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+    <script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+    <style type="text/css">
+        .page-header {
+            margin-top: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #31BCD1;
+        }
+        .row div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+    </style>
+    <body>
+    <ol class="breadcrumb">
+        <li><a href="medicineManager.html" th:href="@{medicineManager}">药品信息管理</a></li>
+        <li class="active">新药品入库</li>
+    </ol>
+
+    <h2 class="page-header">新药品入库</h2>
+    <!--<span id="inId" hidden></span>&lt;!&ndash; 用于记录自动生成的入库编号 &ndash;&gt;-->
+    <form class="form-horizontal" style="height: 760px">
+        <div class="form-group">
+            <label for="drugName" class="col-sm-2 control-label"><span style="color:red;">* </span>药品名称</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugName" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugType" class="col-sm-2 control-label"><span style="color:red;">* </span>药品类型</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugType" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugSpecification" class="col-sm-2 control-label"><span style="color:red;">* </span>药品规格</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugSpecification" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugWay" class="col-sm-2 control-label"><span style="color:red;">* </span>药品用法</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugWay" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugFunction" class="col-sm-2 control-label">药品功能</label>
+            <div class="col-sm-3">
+                <textarea id="drugFunction" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugStock" class="col-sm-2 control-label"><span style="color:red;">* </span>药品库存</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugStock" onblur="checkNum(this)">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugUnit" class="col-sm-2 control-label"><span style="color:red;">* </span>药品单位</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugUnit" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugPrice" class="col-sm-2 control-label"><span style="color:red;">* </span>药品单价</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugPrice" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugTime" class="col-sm-2 control-label"><span style="color:red;">* </span>药品有效期</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugTime" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="drugProvider" class="col-sm-2 control-label"><span style="color:red;">* </span>生产厂家</label>
+            <div class="col-sm-3">
+                <input class="form-control col-lg-4" id="drugProvider" onblur="isNullForm(this)">
+                <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary" id="addNewDrug">点击提交</button>
+            </div>
+        </div>
+    </form>
+    </body>
+    <script type="text/javascript">
+        $("#addNewDrug").click(function () {
+            if (checkForm()==false){
+                alert("请正确填写相关信息");
+                return false;
+            }
+            $.ajax({
+                async: false,
+                type: "post",
+                dataType: "text",
+                data: {
+                    "drugName": $("#drugName").val(),
+                    "drugType": $("#drugType").val(),
+                    "drugSpecification": $("#drugSpecification").val(),
+                    "drugWay": $("#drugWay").val(),
+                    "drugFunction": $("#drugFunction").val(),
+                    "drugStock": $("#drugStock").val(),
+                    "drugUnit": $("#drugUnit").val(),
+                    "drugPrice": $("#drugPrice").val(),
+                    "drugTime": $("#drugTime").val(),
+                    "drugProvider": $("#drugProvider").val(),
+                },
+                url: "/hos/insertDrug",
+                success: function (data) {
+                    if (data!="insert drug fail"){
+                        alert("药品信息插入成功");
+                        addDrugIn(data);
+                        location.reload();
+                    } else {
+                        alert("发生未知错误，插入失败，请稍后再试");
+                    }
+                }
+            });
+        })
+
+        function addDrugIn(data) {
+            var time = getCurrentTime();
+            var adminId = [[${session.currentAdmin.adminId}]];
+            var inId = time + adminId;
+            $.ajax({
+                async: false,
+                type: "post",
+                dataType: "text",
+                data: {
+                    "inId": inId,
+                    "drugId": data,
+                    "inSum": $("#drugStock").val(),
+                    "adminId": [[${session.currentAdmin.adminId}]]
+                },
+                url: "/hos/insertDrugIn",
+                success: function (data) {
+                    if (data=="insert in success"){
+                        console.log("药品入库成功");
+                    } else {
+                        console.log("药品入库失败");
+                    }
+                }
+            });
+        }
+
+        function checkForm() {
+            if(isNullForm("#drugName")==false){
+                return false;
+            }
+            if (isNullForm("#drugType")==false){
+                return false;
+            }
+            if(isNullForm("#drugSpecification")==false){
+                return false;
+            }
+            if(isNullForm("#drugWay")==false){
+                return false;
+            }
+            if(checkNum("#drugStock")==false){
+                return false;
+            }
+            if (isNullForm("#drugUnit")==false){
+                return false;
+            }
+            if(isNullForm("#drugPrice")==false){
+                return false;
+            }
+            if (isNullForm("#drugTime")==false){
+                return false;
+            }
+            if(isNullForm("#drugProvider")==false){
+                return false;
+            }
+            return true;
+        }
+    </script>
+</html>

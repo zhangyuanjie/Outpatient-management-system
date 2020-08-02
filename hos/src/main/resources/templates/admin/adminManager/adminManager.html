@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>管理员管理</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+    <script src="../js/page.js" th:src="@{~/hos/static/js/check.js}"></script>
+    <style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">管理员信息查询</li>
+		</ol>
+
+		<h2 class="page-header">查询管理员信息</h2>
+		<div class="row">
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="adminAccount">账号</label>
+				<input type="text" class="form-control" id="adminAccount" placeholder="请输入账号">
+			</div>
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="adminName">姓名</label>
+				<input type="text" class="form-control" id="adminName" placeholder="请输入姓名">
+			</div>
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="adminSex">性别</label>
+				<select class="form-control" id="adminSex">
+                    <option value="">请选择性别</option>
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+				</select>
+			</div>
+		</div>
+		<div class="row">
+			<div class="form-group form-inlin col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<button type="button" class="btn btn-default" id="searchAdmin">查询</button>
+			</div>
+		</div>
+
+		<h3 class="page-header">查询结果</h3>
+		<p class='text-center alert alert-warning' id="nullData" style="display: none">暂无匹配结果</p> <!-- 用于当查询无结果时的提示信息 -->
+		<table class="table table-striped table-bordered table-hover" id="resultTable">
+			<thead>
+				<tr>
+					<th>账号</th>
+					<th>姓名</th>
+					<th>性别</th>
+					<th>年龄</th>
+					<th>邮箱</th>
+                    <th>联系电话</th>
+                </tr>
+			</thead>
+			<tbody id="result">
+
+			</tbody>
+		</table>
+
+		<div class="thePage">
+			<nav aria-label="Page navigation" class="text-center" id="pageNav">
+				<ul class="pagination" id="pageDetails">
+
+				</ul>
+			</nav>
+			<p class="text-center alert alert-info">当前 <span id="pageNum"></span> 页，总 <span id="pages"></span> 页，共 <span id="total"></span> 条记录</p>
+		</div>
+
+        <!-- 模态框 -->
+        <!--<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">-->
+            <!--<div class="modal-dialog" role="document">-->
+                <!--<div class="modal-content">-->
+                    <!--<div class="modal-header">-->
+                        <!--<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>-->
+                        <!--<h4 class="modal-title" id="myModalLabel">用户详情</h4>-->
+                    <!--</div>-->
+                    <!--<div class="modal-body">-->
+                        <!--<form class="form-horizontal">-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uId" class="col-sm-3 control-label">用户编号：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uId" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uAccount" class="col-sm-3 control-label">用户账号：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uAccount" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uName" class="col-sm-3 control-label">用户姓名：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uName" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uSex" class="col-sm-3 control-label">用户性别：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uSex" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uAge" class="col-sm-3 control-label">用户年龄：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uAge" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uType" class="col-sm-3 control-label">用户类别：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uType" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uEmail" class="col-sm-3 control-label">用户邮箱：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uEmail" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uPhone" class="col-sm-3 control-label">联系方式：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uPhone" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--<div class="form-group">-->
+                                <!--<label for="uAddress" class="col-sm-3 control-label">联系地址：</label>-->
+                                <!--<div class="col-sm-9">-->
+                                    <!--<span id="uAddress" class="form-control"></span>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</form>-->
+                    <!--</div>-->
+                    <!--<div class="modal-footer">-->
+                        <!--<button type="button" class="btn btn-default" data-dismiss="modal">确认</button>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+	</body>
+    <script type="text/javascript">
+        $("document").ready(function () {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/admin/selectAllAdmin",
+                success: function (data) {
+                    showResult(data); // 展示分页的数据
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            });
+        });
+
+        // 展示用户相关信息
+        function showResult(data) {
+            var result = null;
+            // 如果查询结果不存在
+            if(data.list.length==0){
+                $("#nullData").show();
+                $("#resultTable").hide();
+            }else{
+                $("#nullData").hide();
+                $("#resultTable").show();
+                // 获取分页之后的数据
+                for(var i=0;i<data.list.length;i++){
+                    result += '<tr>' +
+                        '<td>' + data.list[i].adminAccount + '</td> ' +
+                        '<td>' + data.list[i].adminName + '</td>'+
+                        '<td>' + data.list[i].adminSex + '</td>'+
+                        '<td>' + data.list[i].adminAge + '</td>'+
+                        '<td>' + data.list[i].adminEmail + '</td>'+
+                        '<td>' + data.list[i].adminPhone + '</td>'+
+                        '</tr>';
+                }
+                $("#pageNum").text(data.pageNum);
+                $("#pages").text(data.pages);
+                $("#total").text(data.total);
+                $("#result").html(result);
+            }
+        }
+
+        $("#searchAdmin").click(function () {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/admin/selectAdminByKey",
+                data: {
+                    "adminAccount": $("#adminAccount").val(),
+                    "adminName": $("#adminName").val(),
+                    "adminSex": $("#adminSex").val(),
+                },
+                success: function (data) {
+                    showResult(data); // 展示分页的数据
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            });
+        })
+
+        // 点击翻页时触发的函数
+        function nextPage(page){
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/admin/selectAdminByKey",
+                data: {
+                    "adminAccount": $("#adminAccount").val(),
+                    "adminName": $("#adminName").val(),
+                    "adminSex": $("#adminSex").val(),
+                },
+                success: function (data) {
+                    showResult(data); // 展示分页的数据
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            });
+        }
+
+        // function showUser(adminId) {
+        //     $.ajax({
+        //         async: false,
+        //         type: "get",
+        //         dataType: "json",
+        //         url: "/hos/admin/selectUserById",
+        //         data: {
+        //             "adminId": adminId,
+        //         },
+        //         success: function (data) {
+        //             $("#uId").text(data.adminId);
+        //             $("#uName").text(data.adminName);
+        //             $("#uAccount").text(data.adminAccount);
+        //             $("#uType").text(data.adminType);
+        //             $("#uSex").text(data.adminSex);
+        //             $("#uAge").text(data.adminAge);
+        //             $("#uEmail").text(data.adminEmail);
+        //             $("#uPhone").text(data.adminPhone);
+        //             $("#uAddress").text(data.adminAddress);
+        //
+        //
+        //         }
+        //     });
+        // }
+    </script>
+</html>

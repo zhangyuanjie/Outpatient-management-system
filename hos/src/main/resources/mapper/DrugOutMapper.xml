@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.DrugOutMapper">
+    <insert id="insertDrugOut" parameterType="drugOut">
+        insert into t_drugout(out_id,drug_id, out_sum, out_time)
+        value(#{outId}, #{drugId}, #{outSum}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <resultMap id="drugOutMap" type="drugOut">
+        <id column="out_id" property="outId" />
+        <result column="drug_id" property="drugId" />
+        <result column="in_sum" property="inSum" />
+        <result column="out_time" property="outTime" />
+        <association property="drug" column="drug_id" javaType="drug">
+            <id column="drug_id" property="drugId"/>
+            <result column="drug_name" property="drugName"/>
+            <result column="drug_type" property="drugType"/>
+            <result column="drug_specification" property="drugSpecification"/>
+            <result column="drug_way" property="drugWay"/>
+            <result column="drug_function" property="drugFunction"/>
+            <result column="drug_unit" property="drugUnit"/>
+            <result column="drug_price" property="drugPrice"/>
+            <result column="drug_time" property="drugTime"/>
+            <result column="drug_provider" property="drugProvider"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllDrugOut" resultMap="drugOutMap">
+        select o.*, d.* from t_drugout o inner join t_drug d on o.drug_id = d.drug_id order by o.out_time desc
+    </select>
+
+    <select id="selectDrugOutByKey" resultMap="drugOutMap" parameterType="com.zyj.hos.vo.DrugOutVo">
+        select i.*, d.* from t_drugout i inner join t_drug d on i.drug_id = d.drug_id
+        <where>
+            <if test="outId!='' and outId!=null">
+                and i.out_id like concat('%',#{outId}, '%')
+            </if>
+            <if test="drugId!='' and drugId!=null">
+                and i.drug_id like concat('%',#{drugId}, '%')
+            </if>
+            <if test="drugName!='' and drugName!=null">
+                and d.drug_name like concat('%',#{drugName}, '%')
+            </if>
+            <if test="startTime!=null">
+                and i.out_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and i.out_time &lt; #{endTime}
+            </if>
+        </where>
+        order by i.out_time desc
+    </select>
+</mapper>

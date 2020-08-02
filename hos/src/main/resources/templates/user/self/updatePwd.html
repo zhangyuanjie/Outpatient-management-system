@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}">
+		<script type="text/javascript" src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+		<script type="text/javascript" src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+		<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	</head>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+		#contextBody1,#contextBody2,#contextBody3 {
+			padding-top: 100px;
+			padding-bottom: 50px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">修改密码</li>
+		</ol>
+
+		<h2 class="page-header">修改密码</h2>
+		<span id="userId" hidden th:text="${session.currentUser.userId}"></span><!-- 用于记录当前登录的用户id -->
+		<div class="progress">
+			<div class="progress-bar progress-bar-info progress-bar-striped" style="width: 33%" id="bar1">
+				<span>输入旧密码</span>
+			</div>
+			<div class="progress-bar progress-bar-warning progress-bar-striped" style="width: 33%" id="bar2" hidden="hidden">
+				<span>输入新密码</span>
+			</div>
+			<div class="progress-bar progress-bar-success progress-bar-striped" style="width: 34%" id="bar3" hidden="hidden">
+				<span>修改成功</span>
+			</div>
+		</div>
+		<div id="pwd1" style="height: 400px;">
+			<div class="row" id="contextBody1">
+				<div class="form-group col-sm-offset-4 col-sm-4" id="oldPwdDiv">
+					<label for="oldPwd" class="control-label">输入旧密码 <small style="color: #A94442;" hidden id="oldPwdError"><!-- 用于显示错误信息 --></small></label>
+					<div class="input-group">
+						<input type="password" class="form-control" id="oldPwd" aria-describedby="basic-addon1" onblur="checkOldPwd()">
+						<span class="input-group-addon" id="basic-addon1"><i class="glyphicon glyphicon glyphicon-eye-close" onclick="seePwd(this)"></i></span>
+					</div>
+				</div>
+			</div>
+			<div class="row text-center">
+				<button type="button" class="btn btn-info" id="oldNext">下一步</button>
+			</div>
+		</div>
+		<div id="pwd2" hidden="hidden">
+			<div class="row" id="contextBody2">
+				<div class="form-group col-sm-offset-4 col-sm-4" id="newPwdDiv">
+					<label for="newPwd" class="control-label">请设置新的密码 <small style="color: #A94442;" id="newPwdError" hidden><!-- 用于显示错误信息 --></small></label>
+					<div class="input-group">
+						<input type="password" class="form-control" id="newPwd" aria-describedby="basic-addon2" onblur="checkNewPwd()">
+						<span class="input-group-addon" id="basic-addon2"><i class="glyphicon glyphicon glyphicon-eye-close" onclick="seePwd(this)"></i></span>
+					</div>
+				</div>
+				<div class="form-group col-sm-offset-4 col-sm-4" id="newPwdAgainDiv">
+					<label for="newPwdAgain" class="control-label">请再次输入新的密码 <small style="color: #A94442;" id="newPwdAgainError" hidden><!-- 用于显示错误信息 --></small></label>
+					<div class="input-group">
+						<input type="password" class="form-control" id="newPwdAgain" aria-describedby="basic-addon3" onblur="checkNewPwdAgain()">
+						<span class="input-group-addon" id="basic-addon3"><i class="glyphicon glyphicon glyphicon-eye-close" onclick="seePwd(this)"></i></span>
+					</div>
+				</div>
+			</div>
+			<div class="row text-center">
+				<button type="button" class="btn btn-info" id="newPrev">上一步</button>
+				<button type="button" class="btn btn-primary" id="newNext">修改</button>
+			</div>
+		</div>
+		<div id="pwd3" hidden="hidden">
+			<div id="contextBody3">
+				<div class="form-group col-sm-offset-4 col-sm-4">
+					<p class="text-center alert alert-success">修改密码成功，<span id="lastTime" style="color: red;">5</span> s 之后，自动跳转到登录页面</p>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		$("#oldNext").click(function() {
+		    if (checkOldPwd()==false){
+		        return false;
+			}else {
+                $.ajax({
+                    async: false,
+                    dataType: "text",
+                    type: "post",
+                    data: {"userId": $("#userId").text(), "pwd": $("#oldPwd").val()},
+                    url: "/hos/user/selectPwdById",
+                    success: function (data) {
+                        if (data=="pwd right"){
+                            $("#pwd1").hide();
+                            $("#pwd2").show();
+                            $("#bar2").show();
+                        }else {
+                            $("#oldPwdDiv").attr("class","form-group col-sm-offset-4 col-sm-4 has-error");
+                            $("#oldPwdError").html("（密码错误）")
+                            $("#oldPwdError").show();
+                        }
+                    }
+                });
+			}
+		});
+
+        $("#newPrev").click(function() {
+            $("#pwd2").hide();
+            $("#pwd1").show();
+            $("#bar2").hide();
+        });
+
+		$("#newNext").click(function() {
+			if (checkNewPwd()==false){
+			    return false;
+			}
+			if (checkNewPwdAgain()==false){
+			    return false;
+			}
+            $.ajax({
+                async: false,
+                dataType: "text",
+                type: "post",
+                data: {"userId": $("#userId").text(), "userPwd": $("#newPwdAgain").val()},
+                url: "/hos/user/updatePwdById",
+                success: function (data) {
+                    if (data=="update pwd success"){
+                        $("#pwd1").hide();
+                        $("#pwd2").hide();
+                        $("#pwd3").show();
+                        $("#bar3").show();
+                        timeOut();
+                    }else {
+                        alert("修改密码失败，请稍后再试");
+                    }
+                }
+            });
+		});
+
+		// 修改密码成功5秒后，自动跳转到登录界面进行登录
+		function timeOut() {
+			var starttime = document.getElementById("lastTime").innerText;
+			if (starttime == 0) {
+				top.location.href = "/hos/login";
+				return;
+			}
+			setTimeout("timeOut()", 1000);
+			starttime--;
+			document.getElementById("lastTime").innerText = starttime;
+		}
+
+		// 设置点击“眼睛”图标，密码可见，1.5 秒后又变回不可见
+		function seePwd(obj) {
+            $(obj).attr("class", "glyphicon glyphicon glyphicon-eye-open");
+            $(obj).parent().prev().attr("type","text");
+            setTimeout(function () {
+                $(obj).attr("class", "glyphicon glyphicon glyphicon-eye-close");
+                $(obj).parent().prev().attr("type","password");
+            },1500);
+        }
+	</script>
+</html>

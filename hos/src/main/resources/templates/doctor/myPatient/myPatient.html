@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>病人信息</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}" />
+	<link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css" th:href="@{~/hos/static/css/bootstrap-datetimepicker.min.css}" >
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/moment-with-locales.js" th:src="@{~/hos/static/js/moment-with-locales.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.min.js" th:src="@{~/hos/static/js/bootstrap-datetimepicker.min.js}"></script>
+	<script src="../js/bootstrap-datetimepicker.zh-CN.js" charset="UTF-8" th:src="@{~/hos/static/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+    <script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+        .page-header {
+            margin-top: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #31BCD1;
+        }
+        table button{
+            margin: 2px 5px;
+        }
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">病人信息</li>
+		</ol>
+
+		<h2 class="page-header">查询病人信息</h2>
+		<span id="doctorId" th:text="${session.currentDoctor.doctorId}" hidden></span>
+		<div class="row">
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="medicalCard">就诊卡号</label>
+				<input type="text" class="form-control" id="medicalCard" placeholder="请输入就诊卡号">
+			</div>
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<label for="patientName">病人姓名</label>
+				<input type="text" class="form-control" id="patientName" placeholder="请输入病人姓名">
+			</div>
+            <div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+                <label for="registrationStatus">就诊状态</label>
+                <select id="registrationStatus" class="form-control">
+                    <option value="">请选择就诊状态</option>
+                    <option value="1">未就诊</option>
+                    <option value="2">已就诊</option>
+                </select>
+            </div>
+            <div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+                <label for="startTime">开始时间</label>
+                <input type="text" class="form-control" id="startTime" placeholder="点击选择开始时间" aria-describedby="basic-addon1">
+            </div>
+            <div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+                <label for="endTime">结束时间</label>
+                <input type="text" class="form-control" id="endTime" placeholder="点击选择结束时间">
+            </div>
+		</div>
+		<div class="row">
+			<div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-6">
+				<button type="button" class="btn btn-default" id="searchRegPat">查询</button>
+			</div>
+		</div>
+
+		<h3 class="page-header">查询结果</h3>
+		<p class='text-center alert alert-warning' id="nullData" style="display: none">暂无匹配结果</p> <!-- 用于当查询无结果时的提示信息 -->
+		<table class="table table-striped table-bordered table-hover" id="tableResult">
+			<thead>
+				<th>患者编号</th>
+				<th>就诊卡号</th>
+				<th>患者姓名</th>
+				<th>患者性别</th>
+				<th>患者年龄</th>
+                <th>预约时间</th>
+                <th>就诊状态</th>
+                <th>联系电话</th>
+                <th colspan="3">操作</th>
+			</thead>
+			<!-- 此处数据展示，SQL语句使用到了多表查询 -->
+			<tbody id="result">
+
+			</tbody>
+		</table>
+		<div class="thePage">
+			<nav aria-label="Page navigation" class="text-center" id="pageNav">
+				<ul class="pagination" id="pageDetails">
+
+				</ul>
+			</nav>
+			<p class="text-center alert alert-info">当前 <span id="pageNum"></span> 页，总 <span id="pages"></span> 页，共 <span id="total"></span> 条记录</p>
+		</div>
+
+        <!-- 病人详细信息模态框 -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">病人详细信息</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="card" class="col-sm-3 control-label">就诊卡号：</label>
+                                <div class="col-sm-9">
+                                    <span id="card" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="name" class="col-sm-3 control-label">患者姓名：</label>
+                                <div class="col-sm-9">
+                                    <span id="name" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="age" class="col-sm-3 control-label">患者年龄：</label>
+                                <div class="col-sm-9">
+                                    <span id="age" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="sex" class="col-sm-3 control-label">患者性别：</label>
+                                <div class="col-sm-9">
+                                    <span id="sex" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="type" class="col-sm-3 control-label">患者类型：</label>
+                                <div class="col-sm-9">
+                                    <span id="type" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone" class="col-sm-3 control-label">联系电话：</label>
+                                <div class="col-sm-9">
+                                    <span id="phone" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="address" class="col-sm-3 control-label">联系地址：</label>
+                                <div class="col-sm-9">
+                                    <span id="address" class="form-control"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="history" class="col-sm-3 control-label">既往病史：</label>
+                                <div class="col-sm-9">
+                                    <textarea rows="3" class="form-control" readonly id="history"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</body>
+	<script type="text/javascript">
+		$("#startTime").datetimepicker({
+			language: "zh-CN",
+			format: "yyyy-mm-dd hh:ii:ss",
+			autoclose: true,
+			todayBtn: true
+		});
+		$("#endTime").datetimepicker({
+			language: "zh-CN",
+			format: "yyyy-mm-dd hh:ii:ss",
+			autoclose: true,
+			todayBtn: true
+		});
+
+		$("document").ready(function () {
+			$.ajax({
+				async: false,
+				type: "get",
+				dataType: "json",
+				data: {"doctorId":$("#doctorId").text()},
+				url: "/hos/selectPatByDocId",
+				success: function (data) {
+					showResult(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+			})
+        });
+
+        $("#searchRegPat").click(function () {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {
+                    "doctorId":$("#doctorId").text(),
+                    "medicalCard": $("#medicalCard").val(),
+                    "patientName": $("#patientName").val(),
+                    "registrationStatus": $("#registrationStatus").val(),
+                    "startTime": $("#startTime").val(),
+                    "endTime": $("#endTime").val()
+                },
+                url: "/hos/selectRegPatByKey",
+                success: function (data) {
+                    showResult(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            })
+        });
+
+        // 点击翻页时触发的函数
+        function nextPage(page){
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {
+                    "pageNum": page,
+                    "doctorId":$("#doctorId").text(),
+                    "medicalCard": $("#medicalCard").val(),
+                    "patientName": $("#patientName").val(),
+                    "registrationStatus": $("#registrationStatus").val(),
+                    "startTime": $("#startTime").val(),
+                    "endTime": $("#endTime").val()
+                },
+                url: "/hos/selectRegPatByKey",
+                success: function (data) {
+                    showResult(data);
+                    showPage(data);// 动态生成页码
+                    dealPage(data);// 优化页码
+                    IFrameResize();
+                }
+            });
+        }
+
+        function showResult(data) {
+            var result = "";
+            var status = "";
+            var disabled = ""; // 标志：用于根据挂号状态，确认是否可以提醒就诊
+            // 如果查询结果不存在
+            if(data.list.length==0){
+                $("#nullData").show();
+                $("#tableResult").hide();
+            }else{
+                $("#nullData").hide();
+                $("#tableResult").show();
+                // 获取分页之后的数据
+                for(var i=0;i<data.list.length;i++){
+                    if(data.list[i].registrationStatus==2){
+                        status = "已就诊";
+                        disabled = "disabled";
+                    }else if(data.list[i].registrationStatus==1){
+                        status = "未就诊";
+                        disabled = "";
+                    }
+                    result += '<tr>' +
+                        '<td>' + data.list[i].patient.patientId + '</td> ' +
+                        '<td>' + data.list[i].patient.medicalCard + '</td>'+
+                        '<td>' + data.list[i].patient.patientName + '</td>'+
+                        '<td>' + data.list[i].patient.patientSex + '</td>'+
+                        '<td>' + data.list[i].patient.patientAge + '</td>'+
+                        '<td>' + data.list[i].appointmentTime+ '</td>'+
+                        '<td>' + status + '</td>'+
+                        '<td>' + data.list[i].patient.patientPhone + '</td>'+
+                        '<td>' +
+                        '<button class="btn btn-info" id="patDetails" data-target="#myModal" data-toggle="modal" onclick="showPatient(\'' + data.list[i].registrationId + '\')">查看病人详情</button>' +
+                        '<button class="btn btn-primary" id="writeMedical" onclick="toWriteMedical(\'' + data.list[i].registrationId + '\')">书写/查看病历/处方</button>' +
+                        '</td>' +
+                        '</tr>';
+                }
+                $("#pageNum").text(data.pageNum);
+                $("#pages").text(data.pages);
+                $("#total").text(data.total);
+                $("#result").html(result);
+            }
+        }
+
+        // 展示患者详细信息
+        function showPatient(registrationId) {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                data: {"registrationId": registrationId},
+                url: "/hos/selectPatByRegId",
+                success: function (data) {
+                    $("#card").text(data.patient.medicalCard);
+                    $("#name").text(data.patient.patientName);
+                    $("#sex").text(data.patient.patientSex);
+                    $("#age").text(data.patient.patientAge);
+                    $("#type").text(data.patient.patientType);
+                    $("#phone").text(data.patient.patientPhone);
+                    $("#address").text(data.patient.patientAddress);
+                    $("#history").text(data.patient.anamnesis);
+                }
+            });
+        }
+
+        // 跳转至书写病历界面
+        function toWriteMedical(registrationId) {
+            window.location.href = "/hos/doctor/toWriteMedical?registrationId=" + registrationId;
+        }
+	</script>
+</html>

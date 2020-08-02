@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.MedicalRecordMapper">
+    <resultMap type="medicalRecord" id="record_diagnostic_map">
+        <id property="recordId" column="record_id"/>
+        <result property="medicalCard" column="medical_card"/>
+        <result property="recordStatus" column="record_status"/>
+        <result property="createTime" column="create_time"/>
+        <association property="patient" column="patient_id" javaType="patient">
+            <id property="medicalCard" column="medical_card"/>
+            <result column="patient_id" property="patientId"/>
+            <result column="patient_name" property="patientName"/>
+            <result column="patient_sex" property="patientSex"/>
+            <result column="patient_age" property="patientAge"/>
+            <result column="patient_type" property="patientType"/>
+            <result column="patient_phone" property="patientPhone"/>
+            <result column="patient_address" property="patientAddress"/>
+            <result column="anamnesis" property="anamnesis"/>
+        </association>
+        <collection property="diagnostics" javaType="List" ofType="diagnostic">
+            <id property="diagnosticId" column="diagnostic_id"/>
+            <result property="departmentId" column="department_id"/>
+            <result property="doctorId" column="doctor_id"/>
+            <result property="diagnosticTime" column="diagnostic_time"/>
+            <result property="diagnosticResult" column="diagnostic_result"/>
+            <association property="department" column="department_id" javaType="department">
+                <id property="departmentId" column="department_id"/>
+                <result property="departmentName" column="department_name"/>
+            </association>
+            <association property="doctor" column="doctor_id" javaType="doctor">
+                <id property="doctorId" column="doctor_id"/>
+                <result property="doctorName" column="doctor_name"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <select id="selectRecAndDiaById" parameterType="String" resultMap="record_diagnostic_map">
+        select m.*, d.*, p.*, d2.department_id, d2.department_name, d3.doctor_id, d3.doctor_name from t_medicalrecord m inner join t_diagnostic d on m.record_id = d.record_id
+        inner join t_patient p on m.medical_card = p.medical_card
+        inner join t_department d2 on d.department_id = d2.department_id inner join t_doctor d3 on d.doctor_id = d3.doctor_id
+        where m.record_id = #{record_id} ORDER BY d.diagnostic_time DESC
+    </select>
+
+    <select id="selectRecByUserId" parameterType="Integer" resultMap="record_diagnostic_map">
+        select m.*, d.*, p.*, d2.department_id, d2.department_name, d3.doctor_id, d3.doctor_name from t_medicalrecord m inner join t_diagnostic d on m.record_id = d.record_id
+        inner join t_patient p on m.medical_card = p.medical_card
+        inner join t_department d2 on d.department_id = d2.department_id inner join t_doctor d3 on d.doctor_id = d3.doctor_id
+        where m.medical_card in ( select medical_card from t_registration where user_id = #{userId}) and  DATE_SUB(CURDATE(), INTERVAL 30 DAY) &lt;=  date(create_time)
+    </select>
+
+    <select id="selectAllRec" resultMap="record_diagnostic_map">
+        select m.*, d.*, p.*, d2.department_id, d2.department_name, d3.doctor_id, d3.doctor_name from t_medicalrecord m inner join t_diagnostic d on m.record_id = d.record_id
+        inner join t_patient p on m.medical_card = p.medical_card
+        inner join t_department d2 on d.department_id = d2.department_id inner join t_doctor d3 on d.doctor_id = d3.doctor_id
+        order by create_time desc
+    </select>
+
+    <select id="selectRecByKey" resultMap="record_diagnostic_map" parameterType="com.zyj.hos.vo.MedicalRecordVo">
+        select m.*, d.*, p.*, d2.department_id, d2.department_name, d3.doctor_id, d3.doctor_name from t_medicalrecord m inner join t_diagnostic d on m.record_id = d.record_id
+        inner join t_patient p on m.medical_card = p.medical_card
+        inner join t_department d2 on d.department_id = d2.department_id inner join t_doctor d3 on d.doctor_id = d3.doctor_id
+        <where>
+            <if test="recordId!='' and recordId!=null">
+                and m.record_id like concat('%',#{recordId}, '%')
+            </if>
+            <if test="medicalCard!='' and medicalCard!=null">
+                and m.medical_card like concat('%',#{medicalCard}, '%')
+            </if>
+            <if test="patientName!='' and patientName!=null">
+                and p.patient_name like concat('%',#{patientName}, '%')
+            </if>
+            <if test="startTime!=null">
+                and d.diagnostic_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and d.diagnostic_time &lt; #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!--<select id="selectRecByUserId" parameterType="Integer" resultType="medicalRecord">-->
+        <!--select m.* from t_medicalrecord m-->
+        <!--where m.medical_card in ( select medical_card from t_registration where user_id = #{userId})-->
+    <!--</select>-->
+
+    <!--<select id="selectRecAndDiaByKey" parameterType="com.zyj.hos.vo.MedicalRecordVo" resultMap="record_diagnostic_map">-->
+        <!--select m.*, d.*, p.* from t_medicalrecord m inner join t_diagnostic d on m.record_id = d.record_id-->
+        <!--inner join t_patient p on m.medical_card = p.medical_card-->
+        <!--<where>-->
+            <!--<if test="diagnosticId!='' and diagnosticId!=null">-->
+                <!--and d.diagnostic_id like concat('%',#{diagnosticId}, '%')-->
+            <!--</if>-->
+            <!--<if test="medicalCard!='' and medicalCard!=null">-->
+                <!--and m.medical_card like concat('%',#{medicalCard}, '%')-->
+            <!--</if>-->
+            <!--<if test="patientName!='' and patientName!=null">-->
+                <!--and p.patient_name like concat('%',#{patientName}, '%')-->
+            <!--</if>-->
+            <!--<if test="doctorId!='' and doctorId!=null">-->
+                <!--and d.doctor_id = #{doctorId}-->
+            <!--</if>-->
+            <!--<if test="startTime!=null">-->
+                <!--and d.diagnostic_time &gt; #{startTime}-->
+            <!--</if>-->
+            <!--<if test="endTime!=null">-->
+                <!--and d.diagnostic_time &lt; #{endTime}-->
+            <!--</if>-->
+        <!--</where>-->
+        <!--ORDER BY d.diagnostic_time DESC-->
+    <!--</select>-->
+
+    <select id="selectRecByCard" parameterType="String" resultType="medicalRecord">
+        select record_id from t_medicalrecord where medical_card = #{medicalCard}
+    </select>
+
+    <select id="selectRecById" parameterType="String" resultType="medicalRecord">
+        select record_id from t_medicalrecord where record_id = #{recordId}
+    </select>
+
+    <insert id="insertRec" parameterType="medicalRecord">
+        insert into t_medicalrecord(record_id, medical_card, record_status, create_time)
+        value(#{recordId}, #{medicalCard}, "0", CURRENT_TIMESTAMP)
+    </insert>
+
+</mapper>

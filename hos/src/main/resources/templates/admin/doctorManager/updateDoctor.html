@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<link rel="stylesheet" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}">
+	<script type="text/javascript" src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script type="text/javascript" src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/check.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li><a href="doctorManager.html" th:href="@{doctorManager}">医生信息查询</a></li>
+			<li class="active">修改医生信息</li>
+		</ol>
+		
+		<h2 class="page-header">修改医生相关信息</h2>
+		<span id="doctorId" th:text="${doctorId}" hidden></span><!-- 用于记录当前登录的医生id -->
+		<form class="form-horizontal" style="height: 760px">
+			<div class="form-group">
+				<label for="doctorName" class="col-sm-2 control-label">姓名</label>
+				<div class="col-sm-3">
+					<input class="form-control col-lg-4" id="doctorName"  readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorAccount" class="col-sm-2 control-label">账号</label>
+				<div class="col-sm-3">
+					<input class="form-control col-lg-4" id="doctorAccount" readonly="readonly">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorType" class="col-sm-2 control-label"><span style="color:red;">* </span>职称</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="doctorType" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorStatus" class="col-sm-2 control-label">当前状态</label>
+				<div class="col-sm-3">
+                    <select class="form-control" id="doctorStatus">
+                        <option>停诊</option>
+                        <option>坐诊</option>
+                    </select>
+				</div>
+			</div>
+            <div class="form-group">
+                <label for="departmentName" class="col-sm-2 control-label">科室名称</label>
+                <div class="col-sm-3">
+                    <select id="departmentName" class="form-control">
+                        <option value="">请选择科室名称</option>
+                    </select>
+                </div>
+            </div>
+			<div class="form-group">
+				<label for="attendancePrice" class="col-sm-2 control-label"><span style="color:red;">* </span>出诊费用</label>
+				<div class="col-sm-3">
+					<input class="form-control" id="attendancePrice" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="workTime" class="col-sm-2 control-label"><span style="color:red;">* </span>上班时间</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="workTime" placeholder="请输入上班时间" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorDetails" class="col-sm-2 control-label" >备注</label>
+				<div class="col-sm-3">
+					<textarea id="doctorDetails" class="form-control" rows="4"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="submit" class="btn btn-primary" id="updateDoctor">提交修改</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script>
+		$("document").ready(function () {
+			$.ajax({
+				async: false,
+				dataType: "json",
+				type: "get",
+				url: "/hos/selectDoctorDepById",
+                data: {"doctorId": $("#doctorId").text()},
+				success: function (data) {
+					showResult(data);
+                }
+			});
+
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDep",
+                success: function(data) {
+                    //循环data
+                    $.each(data,function(i,obj){
+                        $("#departmentName").append("<option value="+obj.departmentId+">"+obj.departmentName);
+                    });
+                }
+            });
+        });
+
+		function showResult(data) {
+			$("#doctorName").val(data.doctorName);
+            $("#doctorAccount").val(data.doctorAccount);
+            $("#doctorType").val(data.doctorType);
+            $("#doctorStatus").val(data.doctorStatus);
+            $("#attendancePrice").val(data.attendancePrice);
+            $("#doctorDetails").val(data.doctorDetails);
+            $("#workTime").val(data.workTime);
+            $("#departmentName").val(data.department.departmentId);
+            $("#departmentName").text(data.department.departmentName);
+        }
+
+		// 点击提交，对个人信息进行修改
+		$("#updateDoctor").click(function () {
+		    if (checkForm()==false){
+		        alert("请正确填写相关信息");
+		        return false;
+			}
+            event.preventDefault();
+			$.ajax({
+				async: false,
+				type: "post",
+				dataType: "text",
+				data: {
+                    "doctorId": $("#doctorId").text(),
+				    "doctorType": $("#doctorType").val(),
+                    "attendancePrice": $("#attendancePrice").val(),
+                    "doctorStatus": $("#doctorStatus").val(),
+					"workTime": $("#workTime").val(),
+                    "doctorDetails": $("#doctorDetails").val(),
+                    "departmentId": $("#departmentName").val()
+                },
+				url: "/hos/admin/updateDocById",
+				success: function (data) {
+					if (data=="update doctor success"){
+					    alert("修改成功");
+					    location.reload();
+					} else {
+					    alert("发生未知错误，修改失败，请稍后再试");
+					}
+                }
+			});
+        });
+		
+		function checkForm() {
+            if(isNullForm("#doctorType")==false){
+                return false;
+            } if(isNullForm("#attendancePrice")==false){
+                return false;
+            }
+            return true;
+        }
+       
+	</script>
+</html>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.DrugInMapper">
+    <insert id="insertDrugIn" parameterType="drugIn">
+        insert into t_drugin(in_id, drug_id, in_sum, in_time, admin_id)
+        value(#{inId}, #{drugId}, #{inSum}, CURRENT_TIMESTAMP, #{adminId})
+    </insert>
+
+    <resultMap id="drugInMap" type="drugIn">
+        <id column="in_id" property="inId" />
+        <result column="drug_id" property="drugId" />
+        <result column="in_sum" property="inSum" />
+        <result column="in_time" property="inTime" />
+        <result column="admin_id" property="adminId" />
+        <association property="drug" column="drug_id" javaType="drug">
+            <id column="drug_id" property="drugId"/>
+            <result column="drug_name" property="drugName"/>
+            <result column="drug_type" property="drugType"/>
+            <result column="drug_specification" property="drugSpecification"/>
+            <result column="drug_way" property="drugWay"/>
+            <result column="drug_function" property="drugFunction"/>
+            <result column="drug_unit" property="drugUnit"/>
+            <result column="drug_price" property="drugPrice"/>
+            <result column="drug_time" property="drugTime"/>
+            <result column="drug_provider" property="drugProvider"/>
+        </association>
+        <association property="admin" column="admin_id" javaType="admin">
+            <id column="admin_id" property="adminId"></id>
+            <result column="admin_name" property="adminName"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllDrugIn" resultMap="drugInMap">
+        select i.*, d.*, a.admin_name from t_drugin i inner join t_drug d on i.drug_id = d.drug_id
+        inner join t_admin a on i.admin_id = a.admin_id order by i.in_time desc
+    </select>
+
+    <select id="selectDrugInByKey" resultMap="drugInMap" parameterType="com.zyj.hos.vo.DrugInVo">
+        select i.*, d.*, a.admin_name from t_drugin i inner join t_drug d on i.drug_id = d.drug_id
+        inner join t_admin a on i.admin_id = a.admin_id
+        <where>
+            <if test="inId!='' and inId!=null">
+                and i.in_id like concat('%',#{inId}, '%')
+            </if>
+            <if test="drugId!='' and drugId!=null">
+                and i.drug_id like concat('%',#{drugId}, '%')
+            </if>
+            <if test="drugName!='' and drugName!=null">
+                and d.drug_name like concat('%',#{drugName}, '%')
+            </if>
+            <if test="startTime!=null">
+                and i.in_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and i.in_time &lt; #{endTime}
+            </if>
+        </where>
+        order by i.in_time desc
+    </select>
+
+    <select id="selectDrugInById" resultMap="drugInMap" parameterType="String">
+        select i.*, d.*, a.admin_name from t_drugin i inner join t_drug d on i.drug_id = d.drug_id
+        inner join t_admin a on i.admin_id = a.admin_id where in_id = #{inId}
+    </select>
+</mapper>

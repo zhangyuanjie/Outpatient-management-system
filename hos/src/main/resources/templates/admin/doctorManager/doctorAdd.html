@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>新增医生账号</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">新增医生账号</li>
+		</ol>
+
+		<h2 class="page-header">新增医生账号</h2>
+		<form class="form-horizontal">
+			<div class="form-group">
+				<label for="doctorAccount" class="col-sm-2 control-label">医生账号</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control col-lg-4" id="doctorAccount" placeholder="请输入账号" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorName" class="col-sm-2 control-label">医生姓名</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control col-lg-4" id="doctorName" placeholder="请输入姓名" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorPwd" class="col-sm-2 control-label">医生密码</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="doctorPwd" placeholder="请输入密码" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorSex" class="col-sm-2 control-label">性别</label>
+				<div class="col-sm-3">
+					<select class="form-control" id="doctorSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="doctorType" class="col-sm-2 control-label">医生类型</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="doctorType" placeholder="请输入类型">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="departmentName" class="col-sm-2 control-label">科室名称</label>
+                <div class="col-sm-3">
+                    <select id="departmentName" class="form-control">
+                        <option value="">请选择科室名称</option>
+                    </select>
+                </div>
+			</div>
+			<div class="form-group">
+				<label for="workTime" class="col-sm-2 control-label">上班时间</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="workTime" placeholder="请输入上班时间" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="attendancePrice" class="col-sm-2 control-label">出诊费用</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="attendancePrice" placeholder="请输入出诊费用" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="button" class="btn btn-default" id="addDoc">提交</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script type="text/javascript">
+		$(document).ready(function () {
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "json",
+                url: "/hos/selectDep",
+                success: function(data) {
+                    //循环data
+                    $.each(data,function(i,obj){
+                        $("#departmentName").append("<option value="+obj.departmentId+">"+obj.departmentName);
+                    });
+                }
+            });
+        })
+
+        $("#addDoc").click(function () {
+            if (checkForm()==false){
+                alert("请正确填写相关信息");
+                return false;
+            }
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                url: "/hos/admin/insertDoctor",
+                data:{
+                    "doctorAccount": $("#doctorAccount").val(),
+                    "doctorName": $("#doctorName").val(),
+                    "doctorPwd": $("#doctorPwd").val(),
+					"doctorType": $("#doctorType").val(),
+					"doctorSex": $("#doctorSex").val(),
+					"workTime": $("#workTime").val(),
+					"attendancePrice": $("#attendancePrice").val(),
+                    "departmentId": $("#departmentName").val()
+                },
+                success: function (data) {
+                    if(data=="insert doc success"){
+                        alert("插入医生信息成功，其它相关信息已提醒用户及时填写");
+                    }else if(data=="doctorAccount is exist"){
+                        $("#doctorAccount").parent().attr("class", "col-sm-3 has-error");
+                        $("#doctorAccount").next().html("(该账号已存在，请重新输入)");
+                        $("#doctorAccount").next().show();
+                        IFrameResize();
+                    }else {
+                        alert("发生未知错误，请稍后再试");
+                    }
+                }
+            });
+        })
+
+        function checkForm() {
+            if(isNullForm("#doctorAccount")==false){
+                return false;
+            }if(isNullForm("#doctorName")==false){
+                return false;
+            } if(isNullForm("#doctorPwd")==false){
+                return false;
+            } if(isNullForm("#attendancePrice")==false){
+                return false;
+            } if(isNullForm("#workTime")==false){
+                return false;
+            }
+            return true;
+        }
+	</script>
+</html>

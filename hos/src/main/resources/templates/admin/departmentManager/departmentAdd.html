@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/check.js}"></script>
+    <style type="text/css">
+        .page-header {
+            margin-top: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #31BCD1;
+        }
+
+        .row div {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">新增科室</li>
+		</ol>
+
+		<h2 class="page-header">新增科室</h2>
+		<form class="form-horizontal">
+            <div class="form-group">
+                <label for="departmentName" class="col-sm-2 control-label">科室名称</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="departmentName" placeholder="请输入科室名称" onblur="isNullForm(this)">
+                    <small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+                </div>
+            </div>
+			<div class="form-group">
+				<label for="departmentDetails" class="col-sm-2 control-label">科室名称</label>
+				<div class="col-sm-3">
+                    <textarea rows="3" class="form-control" id="departmentDetails"></textarea>
+				</div>
+			</div>
+		  <div class="form-group">
+		    <div class="col-sm-offset-2 col-sm-10">
+		      <button type="button" class="btn btn-default" id="addDep">提交</button>
+		    </div>
+		  </div>
+		</form>
+	</body>
+
+    <script type="text/javascript">
+        $("#addDep").click(function () {
+            if (checkForm()==false){
+                alert("请正确填写相关信息");
+                return false;
+            }
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                url: "/hos/insertDepartment",
+                data:{
+                    "departmentName": $("#departmentName").val(),
+                    "departmentDetails": $("#departmentDetails").val()
+                },
+                success: function (data) {
+                    if(data=="insert dep success"){
+                        alert("插入科室信息成功");
+                    }else if(data=="dep is exist"){
+                        $("#departmentName").parent().attr("class", "col-sm-3 has-error");
+                        $("#departmentName").next().html("(该科室已存在，请重新输入)");
+                        $("#departmentName").next().show();
+                        IFrameResize();
+                    }else {
+                        alert("发生未知错误，请稍后再试");
+                    }
+                }
+            });
+        })
+
+        function checkForm() {
+            if(isNullForm("#departmentName")==false){
+                return false;
+            }
+            return true;
+        }
+    </script>
+</html>

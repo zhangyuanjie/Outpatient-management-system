@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyj.hos.dao.RegistrationMapper">
+    <insert id="insertRegistration" parameterType="registration">
+        Insert into t_registration(registration_id, department_id,registration_type,medical_card, patient_name, registration_time, appointment_time, doctor_id, user_id, registration_price)
+        VALUES(#{registrationId}, #{departmentId}, #{registrationType}, #{medicalCard}, #{patientName}, CURRENT_TIMESTAMP, #{appointmentTime}, #{doctorId}, #{userId}, #{registrationPrice});
+    </insert>
+
+    <select id="selectNowReg" resultType="registration" parameterType="Integer">
+        select * from t_registration where registration_status = 0 or registration_status = 1 and user_id = #{userId} order by registration_time desc ;
+    </select>
+
+    <select id="selectOldReg" resultType="registration" parameterType="Integer">
+        select * from t_registration where registration_status = -1 or registration_status = 2 and user_id = #{userId} order by registration_time desc;
+    </select>
+    
+    <resultMap id="regMoreMap" type="registration">
+        <id column="registration_id" property="registrationId"/>
+        <result column="medical_card" property="medicalCard"/>
+        <result column="patient_name" property="patientName"/>
+        <result column="department_id" property="departmentId"/>
+        <result column="doctor_id" property="doctorId"/>
+        <result column="registration_type" property="registrationType"/>
+        <result column="registration_time" property="registrationTime"/>
+        <result column="appointment_time" property="appointmentTime"/>
+        <result column="registration_price" property="registrationPrice"/>
+        <result column="registration_status" property="registrationStatus"/>
+        <association property="patient" column="medical_card" javaType="patient">
+            <id column="medical_card" property="medicalCard"/>
+            <result column="patient_id" property="patientId"/>
+            <result column="patient_sex" property="patientSex"/>
+            <result column="patient_age" property="patientAge"/>
+            <result column="patient_type" property="patientType"/>
+            <result column="patient_phone" property="patientPhone"/>
+            <result column="patient_address" property="patientAddress"/>
+            <result column="anamnesis" property="anamnesis"/>
+        </association>
+        <association property="department" column="departmentId" javaType="department">
+            <id property="departmentId" column="department_id"/>
+            <result property="departmentName" column="department_name"/>
+        </association>
+        <association property="doctor" column="doctorId" javaType="doctor">
+            <id property="doctorId" column="doctor_id"/>
+            <result property="doctorName" column="doctor_name"/>
+            <result property="attendancePrice" column="attendance_price"/>
+        </association>
+        <association property="user" column="user_id" javaType="user">
+            <id property="userId" column="user_id"/>
+            <result property="userName" column="user_name"/>
+        </association>
+    </resultMap>
+
+    <select id="selectRegMore" resultMap="regMoreMap" parameterType="String">
+        select r.*, p.*, d1.department_name, d2.doctor_name, d2.attendance_price, u.user_name from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        inner join t_department d1 on r.department_id = d1.department_id
+        inner join t_doctor d2 on r.doctor_id = d2.doctor_id
+        inner join t_user u on r.user_id = u.user_id
+        where r.registration_id = #{registrationId}
+    </select>
+
+    <!-- 取消预约 -->
+    <update id="deleteRegById" parameterType="registration">
+        update t_registration set registration_status = "-1" where registration_id = #{registrationId}
+    </update>
+
+    <update id="updateRegById" parameterType="registration">
+        update t_registration set patient_name = #{patientName}, registration_type = #{registrationType} where registration_id = #{registrationId}
+    </update>
+
+    <resultMap id="regPatMap" type="registration">
+        <id column="registration_id" property="registrationId"/>
+        <result column="medical_card" property="medicalCard"/>
+        <result column="patient_name" property="patientName"/>
+        <result column="department_id" property="departmentId"/>
+        <result column="doctor_id" property="doctorId"/>
+        <result column="registration_type" property="registrationType"/>
+        <result column="registration_time" property="registrationTime"/>
+        <result column="appointment_time" property="appointmentTime"/>
+        <result column="registration_price" property="registrationPrice"/>
+        <result column="registration_status" property="registrationStatus"/>
+        <!--<result column="registration_price" property="registrationPrice"/>-->
+        <!--<result column="registration_status" property="registrationStatus"/>-->
+        <association property="patient" column="medical_card" javaType="patient">
+            <id column="medical_card" property="medicalCard"/>
+            <result column="patient_id" property="patientId"/>
+            <result column="patient_name" property="patientName"/>
+            <result column="patient_sex" property="patientSex"/>
+            <result column="patient_age" property="patientAge"/>
+            <result column="patient_type" property="patientType"/>
+            <result column="patient_phone" property="patientPhone"/>
+            <result column="patient_address" property="patientAddress"/>
+            <result column="anamnesis" property="anamnesis"/>
+        </association>
+    </resultMap>
+    <select id="selectRegByDocId" parameterType="Integer" resultMap="regPatMap">
+        select r.*, p.* from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        where r.doctor_id = #{doctorId} and registration_status = 0 order by r.registration_time asc
+    </select>
+
+    <select id="selectRegByKey" resultMap="regPatMap" parameterType="com.zyj.hos.vo.RegistrationVo">
+        select r.*, p.patient_sex, patient_age from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        <where>
+            <if test="registrationId!='' and registrationId!=null">
+                and r.registration_id like concat('%',#{registrationId}, '%')
+            </if>
+            <if test="medicalCard!='' and medicalCard!=null">
+                and r.medical_card like concat('%',#{medicalCard}, '%')
+            </if>
+            <if test="patientName!='' and patientName!=null">
+                and r.patient_name like concat('%',#{patientName}, '%')
+            </if>
+            <if test="doctorId!='' and doctorId!=null">
+                and r.doctor_id = #{doctorId}
+            </if>
+            <if test="startTime!=null">
+                and r.appointment_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and r.appointment_time &lt; #{endTime}
+            </if>
+            and registration_status = 0
+        </where>
+    </select>
+
+    <!-- 医生接受预约，用户挂号状态变为“预约成功” -->
+    <update id="acceptRegById" parameterType="String">
+        update t_registration set registration_status = 1 where registration_id = #{registrationId}
+    </update>
+
+    <select id="selectPatByDocId" parameterType="Integer" resultMap="regPatMap">
+        select r.registration_id, r.registration_status, r.appointment_time, p.* from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        where doctor_id = #{doctorId} and r.registration_status in (1,2) order by p.patient_id desc
+    </select>
+
+    <select id="selectRegPatByKey" parameterType="com.zyj.hos.vo.RegistrationVo" resultMap="regPatMap">
+        select r.registration_id, r.registration_status, r.appointment_time, p.* from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        <where>
+            <if test="medicalCard!='' and medicalCard!=null">
+                and r.medical_card like concat('%',#{medicalCard}, '%')
+            </if>
+            <if test="patientName!='' and patientName!=null">
+                and r.patient_name like concat('%',#{patientName}, '%')
+            </if>
+            <if test="doctorId!='' and doctorId!=null">
+                and r.doctor_id = #{doctorId}
+            </if>
+            <if test="registrationStatus!=null">
+                and r.registration_status = #{registrationStatus}
+            </if>
+            <if test="startTime!=null">
+                and r.appointment_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and r.appointment_time &lt; #{endTime}
+            </if>
+            and registration_status in (1 ,2) order by p.patient_id desc
+        </where>
+    </select>
+
+    <select id="selectPatByRegId" parameterType="String" resultMap="regPatMap">
+        select p.* from t_registration r inner join t_patient p on r.medical_card = p.medical_card where registration_id = #{registration_id}
+    </select>
+
+    <select id="selectRegByRegId" parameterType="String" resultType="registration">
+        select * from t_registration where registration_id = #{registrationId}
+    </select>
+
+    <update id="updateStatusById" parameterType="String">
+        update t_registration set registration_status = 2 where registration_id = #{registration_id}
+    </update>
+
+    <select id="selectAllReg" resultMap="regMoreMap">
+        select r.*, p.*, d1.department_name, d2.doctor_name, u.user_name from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        inner join t_department d1 on r.department_id = d1.department_id
+        inner join t_doctor d2 on r.doctor_id = d2.doctor_id
+        inner join t_user u on r.user_id = u.user_id order by r.appointment_time desc
+    </select>
+
+    <select id="selectRegMoreByKey" resultMap="regMoreMap" parameterType="com.zyj.hos.vo.RegistrationVo">
+        select r.*, p.*, d1.department_name, d2.doctor_name, u.user_name from t_registration r inner join t_patient p on r.medical_card = p.medical_card
+        inner join t_department d1 on r.department_id = d1.department_id
+        inner join t_doctor d2 on r.doctor_id = d2.doctor_id
+        inner join t_user u on r.user_id = u.user_id
+        <where>
+            <if test="registrationId!='' and registrationId!=null">
+                and r.registration_id like concat('%',#{registrationId}, '%')
+            </if>
+            <if test="medicalCard!='' and medicalCard!=null">
+                and r.medical_card like concat('%',#{medicalCard}, '%')
+            </if>
+            <if test="patientName!='' and patientName!=null">
+                and r.patient_name like concat('%',#{patientName}, '%')
+            </if>
+            <if test="departmentName!='' and departmentName!=null">
+                and d1.department_name = #{departmentName}
+            </if>
+            <if test="doctorName!='' and doctorName!=null">
+                and d2.doctor_name = #{doctorName}
+            </if>
+            <if test="registrationStatus!=null">
+                and registration_status = #{registrationStatus}
+            </if>
+            <if test="startTime!=null">
+                and r.appointment_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null">
+                and r.appointment_time &lt; #{endTime}
+            </if>
+        </where>
+        order by r.appointment_time desc
+    </select>
+
+    <update id="timeOutReg">
+        update t_registration set registration_status = -1 where appointment_time &lt; CURRENT_TIMESTAMP and registration_status = 0
+    </update>
+
+    <select id="selectTodayReg" parameterType="Integer" resultType="Integer">
+        select count(1) from t_registration where date(registration_time) = CURDATE()
+        <where>
+            <if test="doctorId!=null">
+                and doctor_id = #{doctorId}
+            </if>
+        </where>
+    </select>
+</mapper>

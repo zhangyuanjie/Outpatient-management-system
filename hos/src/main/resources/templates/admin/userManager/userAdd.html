@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8">
+		<title>新增教师/学生账号</title>
+	</head>
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.css" th:href="@{~/hos/static/css/bootstrap.css}"/>
+	<script src="../js/jquery-3.4.1.min.js" th:src="@{~/hos/static/js/jquery-3.4.1.min.js}"></script>
+	<script src="../js/bootstrap.min.js" th:src="@{~/hos/static/js/bootstrap.min.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/page.js}"></script>
+	<script src="../js/page.js" th:src="@{~/hos/static/js/check.js}"></script>
+	<style type="text/css">
+		.page-header {
+			margin-top: 20px;
+			padding-left: 10px;
+			border-left: 5px solid #31BCD1;
+		}
+
+		.row div {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+	</style>
+	<body>
+		<ol class="breadcrumb">
+			<li class="active">新增教师/学生账号</li>
+		</ol>
+
+		<h2 class="page-header">新增教师/学生账号</h2>
+		<form class="form-horizontal">
+			<div class="form-group">
+				<label for="userAccount" class="col-sm-2 control-label">教师/学生账号</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control col-lg-4" id="userAccount" placeholder="请输入账号" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="userName" class="col-sm-2 control-label">教师/学生姓名</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control col-lg-4" id="userName" placeholder="请输入姓名" onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="userPwd" class="col-sm-2 control-label">教师/学生密码</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="userPwd" placeholder="请输入密码"  onblur="isNullForm(this)">
+					<small style="color: #A94442;" hidden><!-- 用于显示错误信息 --></small>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="userSex" class="col-sm-2 control-label">性别</label>
+				<div class="col-sm-3">
+					<select class="form-control" id="userSex">
+						<option>男</option>
+						<option>女</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="userType" class="col-sm-2 control-label">身份</label>
+				<div class="col-sm-3">
+					<select class="form-control" id="userType">
+						<option>教师</option>
+						<option>学生</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="button" class="btn btn-default" id="addUser">提交</button>
+				</div>
+			</div>
+		</form>
+	</body>
+	<script type="text/javascript">
+
+        $("#addUser").click(function () {
+            if (checkForm()==false){
+                alert("请正确填写相关信息");
+                return false;
+            }
+            $.ajax({
+                async: false,
+                type: "get",
+                dataType: "text",
+                url: "/hos/admin/insertUser",
+                data:{
+                    "userAccount": $("#userAccount").val(),
+                    "userName": $("#userName").val(),
+                    "userSex": $("#userSex").val(),
+                    "userPwd": $("#userPwd").val(),
+                    "userType": $("#userType").val()
+                },
+                success: function (data) {
+                    if(data=="insert user success"){
+                        alert("插入成功，其它相关信息已提醒用户及时填写");
+                    }else if(data=="userAccount is exist"){
+                        $("#userAccount").parent().attr("class", "col-sm-3 has-error");
+                        $("#userAccount").next().html("(该账号已存在，请重新输入)");
+                        $("#userAccount").next().show();
+                        IFrameResize();
+                    }else {
+                        alert("发生未知错误，请稍后再试");
+                    }
+                }
+            });
+        })
+
+        function checkForm() {
+            if(isNullForm("#userAccount")==false){
+                return false;
+            }
+            if (isNullForm("#userName")==false){
+                return false;
+            }
+            if(isNullForm("#userPwd")==false){
+                return false;
+            }
+            return true;
+        }
+
+
+    </script>
+</html>
